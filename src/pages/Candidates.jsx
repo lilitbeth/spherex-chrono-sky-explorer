@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
@@ -112,8 +112,13 @@ export default function Candidates() {
     return { ...geocentricRADec(el, now), ...motionRate(el, now) };
   }, [el]);
 
+  const detailRef = useRef(null);
   const select = (r, quiet) => {
     setSelectedKey(r.key);
+    // On narrow screens the detail panel sits below the list: bring it into view.
+    if (!quiet && window.matchMedia('(max-width: 1279px)').matches) {
+      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
     if (!quiet) store.toast(`${L('Seleccionado', 'Selected')}: ${r.name}`, 'pageview');
   };
 
@@ -348,7 +353,22 @@ export default function Candidates() {
           </div>
 
           <div className="bg-surface-container rounded-xl shadow-lg overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="md:hidden divide-y divide-outline-variant/40">
+              {feed.loading && !feed.data && (
+                <div className="py-6 text-center text-on-surface-variant font-label text-sm"><Spinner className="text-secondary mr-2" />{L('Consultando NASA NeoWs…', 'Querying NASA NeoWs…')}</div>
+              )}
+              {pageRows.map((r) => (
+                <MobileCard
+                  key={r.key}
+                  r={r}
+                  selected={selected?.key === r.key}
+                  vote={store.votes[r.key]}
+                  onSelect={() => select(r)}
+                  onVote={(v) => voteFor(r, v)}
+                />
+              ))}
+            </div>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-high/70 text-[10px] font-label uppercase tracking-wider text-on-surface-variant">
@@ -429,7 +449,7 @@ export default function Candidates() {
           </div>
         </div>
 
-        <div className="w-full xl:w-[410px] shrink-0 space-y-4 xl:sticky xl:top-20">
+        <div ref={detailRef} className="w-full xl:w-[410px] shrink-0 space-y-4 xl:sticky xl:top-20 scroll-mt-20">
           {selected && (
             <div className="bg-surface-container rounded-xl p-5 shadow-xl space-y-4">
               <div className="flex items-center justify-between bg-surface-container-low/60 -mx-5 -mt-5 p-5 rounded-t-xl">
@@ -486,6 +506,41 @@ export default function Candidates() {
             {lang === 'es' ? 'Fuentes:' : 'Sources:'} <SourceBadge>api.nasa.gov NeoWs</SourceBadge> <SourceBadge>IRSA HiPS</SourceBadge>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileCard({ r, selected, vote, onSelect, onVote }) {
+  const { L, fmtNum } = useI18n();
+  const dot = r.kind === 'neo' ? (r.hazardous ? 'bg-error' : 'bg-secondary') : r.kind === 'bd' ? 'bg-tertiary' : 'bg-primary';
+  const txt = r.kind === 'neo' ? (r.hazardous ? 'text-error' : 'text-secondary') : r.kind === 'bd' ? 'text-tertiary' : 'text-primary';
+  return (
+    <div className={`p-3 ${selected ? 'bg-surface-container-highest' : ''}`}>
+      <button type="button" onClick={onSelect} className="w-full text-left flex items-start gap-3">
+        <span className={`mt-1.5 w-2.5 h-2.5 rounded-full shrink-0 ${dot}`} />
+        <div className="flex-1 min-w-0">
+          <div className="font-label font-bold text-on-surface text-base truncate">{r.name}</div>
+          <div className={`text-xs font-label ${txt}`}>{L(r.subEs, r.subEn)}</div>
+          <div className="text-sm text-on-surface-variant mt-1">
+            {r.kind === 'neo'
+              ? `${fmtNum(r.missLD, 1)} ${L('veces la distancia a la Luna', 'times the Moon distance')} · ${fmtNum(r.vRel, 1)} km/s`
+              : `${fmtNum(r.motion / 1000, 2)}″/${L('año', 'yr')} · ${r.dist ? `${fmtNum(r.dist, 2)} pc` : ''}`}
+          </div>
+          {r.kind === 'neo' && <div className="text-xs text-on-surface-variant">{r.caDate}</div>}
+        </div>
+        <StatusBadge r={r} vote={vote} />
+      </button>
+      <div className="flex gap-2 mt-2 pl-5">
+        <button type="button" onClick={() => onVote('real')} className="flex-1 py-2 rounded-lg bg-secondary/15 text-secondary font-label text-sm flex items-center justify-center gap-1">
+          <Icon name="thumb_up" className="text-base" /> {L('Real', 'Real')}
+        </button>
+        <button type="button" onClick={() => onVote('artifact')} className="flex-1 py-2 rounded-lg bg-error-container/60 text-error font-label text-sm flex items-center justify-center gap-1">
+          <Icon name="thumb_down" className="text-base" /> {L('Ruido', 'Noise')}
+        </button>
+        <button type="button" onClick={onSelect} className="px-3 py-2 rounded-lg bg-surface-container-high text-on-surface font-label text-sm flex items-center gap-1" aria-label={L('Ver detalle', 'View details')}>
+          <Icon name="pageview" className="text-base" />
+        </button>
       </div>
     </div>
   );

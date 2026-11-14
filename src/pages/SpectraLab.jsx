@@ -140,13 +140,13 @@ export default function SpectraLab() {
 
   return (
     <div className="flex flex-col w-full p-4 lg:p-6 space-y-6">
-      <Explain icon="palette" title={L('Los colores que no podemos ver', 'The colours we cannot see')} steps={[L('Elige un objeto arriba', 'Pick an object above'), L('Pasa el ratón por la línea', 'Hover over the line'), L('Busca picos y valles', 'Look for peaks and dips')]}>
+      <Explain icon="palette" title={L('Los colores que no podemos ver', 'The colours we cannot see')} steps={[L('Elige un objeto arriba', 'Pick an object above'), L('Toca o pasa el cursor por la línea', 'Tap or hover over the line'), L('Busca picos y valles', 'Look for peaks and dips')]}>
         {L(
           'Igual que un arcoíris separa la luz en colores, SPHEREx separa la luz infrarroja en 102 “colores”. La línea verde muestra cuánta luz llega en cada uno. Un valle en la franja amarilla “H₂O” significa que hay hielo de agua; un pico en “PAH” indica moléculas de carbono parecidas al hollín.',
           'Just as a rainbow splits light into colours, SPHEREx splits infrared light into 102 “colours”. The green line shows how much light arrives in each one. A dip in the yellow “H₂O” stripe means there is water ice; a peak at “PAH” points to soot-like carbon molecules.',
         )}
       </Explain>
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-low p-4 rounded-xl shadow-lg relative overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-low p-3 sm:p-4 rounded-xl shadow-lg relative overflow-hidden">
         <div className="absolute -right-16 -top-16 w-48 h-48 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex items-center gap-3">
           <span className="p-2.5 rounded-lg bg-surface-container-high text-secondary flex items-center justify-center shadow-inner">
@@ -194,7 +194,7 @@ export default function SpectraLab() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-        <div className="xl:col-span-8 flex flex-col bg-surface-container p-5 rounded-xl shadow-xl space-y-4">
+        <div className="xl:col-span-8 flex flex-col bg-surface-container p-3 sm:p-5 rounded-xl shadow-xl space-y-4 min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-label">
             <div className="flex flex-wrap items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_currentColor]" />
@@ -208,8 +208,8 @@ export default function SpectraLab() {
             </div>
           </div>
 
-          <div className="relative w-full h-[430px] bg-surface-container-lowest rounded-lg p-2 overflow-hidden flex flex-col">
-            <div className="grid grid-cols-6 gap-1 px-10 pt-1 pb-1 text-center">
+          <div className="relative w-full h-[320px] sm:h-[430px] bg-surface-container-lowest rounded-lg p-1 sm:p-2 overflow-hidden flex flex-col">
+            <div className="hidden sm:grid grid-cols-6 gap-1 px-10 pt-1 pb-1 text-center">
               {LVF_BANDS.map((b) => (
                 <div key={b.band} className={`bg-surface-container-high/50 py-0.5 rounded text-[9px] font-label ${b.band <= 3 ? 'text-secondary' : b.band === 4 ? 'text-tertiary' : 'text-primary'}`}>
                   LVF{b.band} ({b.min.toFixed(2)}-{b.max.toFixed(2)}µm)
@@ -217,7 +217,7 @@ export default function SpectraLab() {
               ))}
             </div>
             <div className="relative flex-1 w-full">
-              <svg className="w-full h-full" viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" onMouseMove={onMove} onMouseLeave={() => setCursor(null)}>
+              <svg className="w-full h-full" viewBox={`0 0 ${CW} ${CH}`} preserveAspectRatio="none" onPointerMove={onMove} onPointerDown={onMove} onMouseLeave={() => setCursor(null)} style={{ touchAction: 'pan-y' }}>
                 <defs>
                   <linearGradient id="spectrumGlow" x1="0%" x2="0%" y1="0%" y2="100%">
                     <stop offset="0%" stopColor="#00ffcc" stopOpacity="0.25" />

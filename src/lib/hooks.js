@@ -28,6 +28,19 @@ export function useAsync(fn, deps) {
   return { ...state, reload: () => setNonce((n) => n + 1) };
 }
 
+/** True on phone-sized screens (< 640 px). */
+export function useIsMobile() {
+  const query = '(max-width: 639px)';
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setM(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return m;
+}
+
 /** Ignore keyboard shortcuts while the user is typing. */
 export function isTyping(e) {
   const t = e.target;

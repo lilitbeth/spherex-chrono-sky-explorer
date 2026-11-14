@@ -47,6 +47,18 @@
   border-radius: 3px;
 }
 
+/* Phones: avoid iOS auto-zoom on focus (inputs < 16px) and the grey tap flash. */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .pixelated {
   image-rendering: pixelated;
 }

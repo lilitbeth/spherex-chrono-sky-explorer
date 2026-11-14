@@ -220,7 +220,7 @@ export default function Archive() {
         </div>
       </div>
 
-      <Explain icon="public" title={L('El cielo entero en una sola imagen', 'The whole sky in one picture')} steps={[L('Mueve el ratón por el mapa', 'Move the mouse over the map'), L('Haz clic en un cuadrado', 'Click a square'), L('Compara las fotos a la derecha', 'Compare the photos on the right')]}>
+      <Explain icon="public" title={L('El cielo entero en una sola imagen', 'The whole sky in one picture')} steps={[L('Toca o pasa el cursor por el mapa', 'Tap or hover over the map'), L('Elige un cuadrado', 'Pick a square'), L('Compara las fotos del visor A/B', 'Compare the photos in the A/B viewer')]}>
         {L(
           'Este óvalo es todo el cielo “aplanado”, como un mapa del mundo. La banda brillante es nuestra galaxia, la Vía Láctea. Los cuadrados marcan lugares interesantes, como nubes donde nacen estrellas.',
           'This oval is the whole sky “flattened”, like a world map. The bright band is our galaxy, the Milky Way. The squares mark interesting places, like clouds where stars are born.',
@@ -265,7 +265,7 @@ export default function Archive() {
             </select>
           </div>
 
-          <div className="relative w-full aspect-[2/1] rounded-lg bg-surface-container-lowest overflow-hidden cursor-crosshair" onMouseMove={onMove} onMouseLeave={() => setHover(null)} onClick={onClick}>
+          <div className="relative w-full aspect-[2/1] rounded-lg bg-surface-container-lowest overflow-hidden cursor-crosshair" onPointerMove={onMove} onPointerDown={onMove} onMouseLeave={() => setHover(null)} onClick={onClick}>
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
             <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${MW} ${MH}`}>
               <ellipse cx={MW / 2} cy={MH / 2} rx={MW / 2 - 1} ry={MH / 2 - 1} fill="none" stroke="#5a5068" strokeDasharray="3 3" strokeWidth="1.2" />
@@ -309,7 +309,7 @@ export default function Archive() {
               <text x={MW / 2 + 4} y={MH - 6} fill="#a098b0" fontFamily="Space Grotesk" fontSize="9">-90°</text>
               <text x="8" y={MH / 2 + 4} fill="#a098b0" fontFamily="Space Grotesk" fontSize="9">{frameSys === 'equatorial' ? '24h' : '360°'}</text>
             </svg>
-            <div className="absolute bottom-3 left-4 bg-surface-container-high/90 backdrop-blur px-3 py-1.5 rounded font-label text-[11px] text-on-surface flex flex-wrap items-center gap-3 pointer-events-none">
+            <div className="absolute bottom-3 left-4 bg-surface-container-high/90 backdrop-blur px-3 py-1.5 rounded font-label text-[11px] text-on-surface hidden sm:flex flex-wrap items-center gap-3 pointer-events-none">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                 {hover ? (
@@ -329,6 +329,16 @@ export default function Archive() {
             </div>
           </div>
 
+          <div className="sm:hidden mt-2 bg-surface-container-high/90 px-3 py-2 rounded font-label text-xs text-on-surface space-y-0.5">
+            {hover ? (
+              <>
+                <div className="text-secondary font-semibold">RA {formatRA(hover.ra, 0)} / Dec {formatDec(hover.dec, 0)}</div>
+                <div className="text-on-surface-variant">l/b {fmtNum(hover.gal[0], 1)}°, {fmtNum(hover.gal[1], 1)}° · <span className="text-tertiary">{Number.isFinite(hover.v) ? `${fmtNum(hover.v, 2)} MJy/sr` : '—'}</span></div>
+              </>
+            ) : (
+              <div className="text-on-surface-variant">{L('Toca el mapa para ver coordenadas y elegir un sector.', 'Tap the map to see coordinates and pick a sector.')}</div>
+            )}
+          </div>
           <div className="mt-4 pt-3 flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs font-label">
               <span className="text-on-surface-variant tracking-wider uppercase font-semibold">{L('Surveys semestrales (2025 – 2027)', 'Semi-annual surveys (2025 – 2027)')}</span>

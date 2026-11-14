@@ -12,10 +12,8 @@ import { frameInfo } from '../lib/spectrum.js';
 import { buildImageFits, downloadBlob } from '../lib/fits.js';
 import { currentSurvey } from '../lib/mission.js';
 import { neoStats } from '../lib/nasa.js';
-import { isTyping, useDebounced, useAsync } from '../lib/hooks.js';
+import { isTyping, useDebounced, useAsync, useIsMobile } from '../lib/hooks.js';
 
-const W = 480;
-const H = 300;
 
 const CMAP_LABELS = {
   magma: { es: 'Infrarrojo térmico (Magma)', en: 'Thermal infrared (Magma)' },
@@ -51,6 +49,10 @@ export default function Explorer() {
   const store = useStore();
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  // Image frame: wide on desktop, square on phones so the sky is bigger on small screens.
+  const isMobile = useIsMobile();
+  const W = isMobile ? 400 : 480;
+  const H = isMobile ? 400 : 300;
 
   // ---------- Target ----------
   const target = useMemo(() => {
@@ -148,8 +150,8 @@ export default function Explorer() {
   const toPix = useCallback((ra, dec) => {
     const [x, y] = skyToTan(center[0], center[1], ra, dec);
     return [W / 2 - x / scale, H / 2 - y / scale];
-  }, [center, scale]);
-  const fromPix = useCallback((px, py) => tanToSky(center[0], center[1], -(px - W / 2) * scale, (H / 2 - py) * scale), [center, scale]);
+  }, [center, scale, W, H]);
+  const fromPix = useCallback((px, py) => tanToSky(center[0], center[1], -(px - W / 2) * scale, (H / 2 - py) * scale), [center, scale, W, H]);
 
   const ep = epochs[epochIdx];
   const positions = epochs.map((e) => toPix(...posAt(e.year)));
@@ -182,15 +184,44 @@ export default function Explorer() {
   const stageRef = useRef(null);
   const drag = useRef(null);
   const [dragOffset, setDragOffset] = useState([0, 0]);
+  // Two-finger pinch zoom on touch screens (scaled preview while pinching, real zoom on release).
+  const pointers = useRef(new Map());
+  const pinch = useRef(null);
+  const [pinchScale, setPinchScale] = useState(1);
+  const pointerDist = () => {
+    const [a, b] = [...pointers.current.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+  const resetPointers = () => {
+    pointers.current.clear();
+    pinch.current = null;
+    drag.current = null;
+    setPinchScale(1);
+    setDragOffset([0, 0]);
+  };
   const evToPix = (e) => {
     const r = stageRef.current.getBoundingClientRect();
     return [((e.clientX - r.left) / r.width) * W, ((e.clientY - r.top) / r.height) * H, r.width / W];
   };
   const onPointerDown = (e) => {
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      pinch.current = { d0: pointerDist(), scale: 1 };
+      drag.current = null;
+      setDragOffset([0, 0]);
+      return;
+    }
     drag.current = { x: e.clientX, y: e.clientY, moved: false };
   };
   const onPointerMove = (e) => {
     if (!stageRef.current) return;
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch.current && pointers.current.size === 2) {
+      const sc = Math.max(0.3, Math.min(5, pointerDist() / pinch.current.d0));
+      pinch.current.scale = sc;
+      setPinchScale(sc);
+      return;
+    }
     const [px, py] = evToPix(e);
     setCursor(fromPix(px, py));
     if (drag.current) {
@@ -201,6 +232,17 @@ export default function Explorer() {
     }
   };
   const onPointerUp = (e) => {
+    pointers.current.delete(e.pointerId);
+    if (pinch.current) {
+      if (pointers.current.size < 2) {
+        const sc = pinch.current.scale;
+        pinch.current = null;
+        drag.current = null;
+        setPinchScale(1);
+        setFov((f) => Math.max(0.03, Math.min(2, f / sc)));
+      }
+      return;
+    }
     const d = drag.current;
     drag.current = null;
     if (!d) return;
@@ -466,7 +508,7 @@ export default function Explorer() {
         {/* VIEWPORT */}
         <section className="lg:col-span-8 flex flex-col">
           <div className="bg-surface-container-low px-4 py-2.5 rounded-t-xl flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1 bg-surface-container p-1 rounded">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1 bg-surface-container p-1 rounded w-full sm:w-auto">
               {[
                 ['blink', 'visibility', 'Blink rápido', 'Fast blink'],
                 ['split', 'vertical_split', 'Deslizador split', 'Split slider'],
@@ -477,7 +519,7 @@ export default function Explorer() {
                   key={id}
                   type="button"
                   onClick={() => setMode(id)}
-                  className={`flex items-center gap-1.5 px-3 py-1 font-label text-label-md rounded transition-all ${mode === id ? 'bg-sky text-on-sky font-semibold shadow-[0_0_12px_rgba(56,189,248,0.5)]' : 'text-on-surface-variant hover:text-secondary'}`}
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-1 font-label text-label-md text-left rounded transition-all ${mode === id ? 'bg-sky text-on-sky font-semibold shadow-[0_0_12px_rgba(56,189,248,0.5)]' : 'text-on-surface-variant hover:text-secondary'}`}
                 >
                   <Icon name={icon} className="text-[16px]" />
                   <span>{L(es, en)}</span>
@@ -500,18 +542,19 @@ export default function Explorer() {
 
           <div
             ref={stageRef}
-            className={`relative w-full aspect-[16/10] bg-surface-container-lowest overflow-hidden select-none touch-none ${apertureMode ? 'cursor-cell' : 'cursor-crosshair'} active:cursor-grabbing`}
+            style={{ aspectRatio: `${W} / ${H}` }}
+            className={`relative w-full bg-surface-container-lowest overflow-hidden select-none touch-none ${apertureMode ? 'cursor-cell' : 'cursor-crosshair'} active:cursor-grabbing`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={() => {
-              drag.current = null;
-              setDragOffset([0, 0]);
+              resetPointers();
               setCursor(null);
             }}
+            onPointerCancel={resetPointers}
             onWheel={(e) => setFov((f) => Math.max(0.03, Math.min(2, f * (e.deltaY > 0 ? 1.2 : 1 / 1.2))))}
           >
-            <div className="absolute inset-0" style={{ transform: `translate(${dragOffset[0]}px, ${dragOffset[1]}px)` }}>
+            <div className="absolute inset-0" style={{ transform: `translate(${dragOffset[0]}px, ${dragOffset[1]}px) scale(${pinchScale})` }}>
               {mode === 'blink' && (
                 <>
                   {['2mass', 'wise', 'spherex'].map((k, i) => (
@@ -588,13 +631,13 @@ export default function Explorer() {
             </div>
 
             {/* HUD badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1.5 pointer-events-none">
               <div className="flex items-center gap-2 bg-surface-container-lowest/85 backdrop-blur-md px-2.5 py-1 rounded font-label text-telemetry text-on-surface">
                 <span className="text-secondary">{mode === 'blink' ? surveyName(ep.key) : surveyName('spherex')}</span>
-                <span>|</span>
-                <span>{W} × {H} px</span>
+                <span className="hidden sm:inline">|</span>
+                <span className="hidden sm:inline">{W} × {H} px</span>
               </div>
-              <div className="bg-surface-container-lowest/85 backdrop-blur-md px-2.5 py-0.5 rounded font-label text-telemetry text-outline w-fit">
+              <div className="hidden sm:block bg-surface-container-lowest/85 backdrop-blur-md px-2.5 py-0.5 rounded font-label text-telemetry text-outline w-fit">
                 {L('Cursor', 'Cursor')}: <span className="text-secondary">{cursor ? `${formatRA(cursor[0], 1)}, ${formatDec(cursor[1], 0)}` : '—'}</span>
               </div>
             </div>
@@ -619,7 +662,7 @@ export default function Explorer() {
               </div>
             )}
 
-            <div className="absolute top-3 right-3 flex flex-col gap-1 z-20" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
+            <div className="absolute z-20 flex flex-wrap justify-center gap-1 bottom-2 left-1 right-1 sm:bottom-auto sm:left-auto sm:top-3 sm:right-3 sm:flex-col sm:gap-1" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
               {[
                 ['zoom_in', L('Aumentar zoom (+)', 'Zoom in (+)'), () => setFov((f) => Math.max(0.03, f / 1.5)), false],
                 ['zoom_out', L('Reducir zoom (−)', 'Zoom out (−)'), () => setFov((f) => Math.min(2, f * 1.5)), false],
@@ -635,7 +678,7 @@ export default function Explorer() {
                   title={title}
                   aria-label={title}
                   onClick={fn}
-                  className={`w-8 h-8 rounded backdrop-blur-md flex items-center justify-center transition-colors ${active ? 'bg-sky/25 text-sky shadow-[0_0_8px_rgba(56,189,248,0.4)]' : 'bg-surface-container-lowest/85 hover:text-sky text-on-surface'}`}
+                  className={`w-9 h-9 sm:w-8 sm:h-8 rounded backdrop-blur-md flex items-center justify-center transition-colors ${active ? 'bg-sky/25 text-sky shadow-[0_0_8px_rgba(56,189,248,0.4)]' : 'bg-surface-container-lowest/85 hover:text-sky text-on-surface'}`}
                 >
                   <Icon name={icon} className="text-[18px]" />
                 </button>
@@ -652,12 +695,12 @@ export default function Explorer() {
                 onChange={(e) => setSplit(Number(e.target.value))}
                 onPointerDown={(e) => e.stopPropagation()}
                 onPointerUp={(e) => e.stopPropagation()}
-                className="absolute bottom-12 left-1/2 -translate-x-1/2 w-1/2 accent-sky z-20"
+                className="absolute bottom-16 sm:bottom-12 left-1/2 -translate-x-1/2 w-2/3 sm:w-1/2 accent-sky z-20"
                 aria-label="Split"
               />
             )}
 
-            <div className="absolute bottom-3 left-3 bg-surface-container-lowest/85 backdrop-blur-md p-2 rounded pointer-events-none flex items-center gap-3">
+            <div className="absolute bottom-3 left-3 bg-surface-container-lowest/85 backdrop-blur-md p-2 rounded pointer-events-none hidden sm:flex items-center gap-3">
               <div className="relative w-8 h-8 flex items-center justify-center">
                 <Icon name="explore" className="text-[24px] text-outline" />
                 <span className="absolute -top-1 text-sky font-label text-telemetry font-bold">N</span>
@@ -679,7 +722,7 @@ export default function Explorer() {
           {/* Timeline dock */}
           <div className="bg-surface-container-low p-4 rounded-b-xl flex flex-col gap-3 shadow-md">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1">
                 <button type="button" onClick={() => setPlaying((p) => !p)} className="w-10 h-10 rounded bg-sky text-on-sky flex items-center justify-center shadow-[0_0_16px_rgba(56,189,248,0.6)]" aria-label={playing ? 'Pause' : 'Play'}>
                   <Icon name={playing ? 'pause' : 'play_arrow'} className="text-[22px]" />
                 </button>

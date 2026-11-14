@@ -111,16 +111,16 @@ export function Explain({ icon = 'lightbulb', title, children, steps = [] }) {
   const [hidden, setHidden] = useState(false);
   if (!simple || hidden) return null;
   return (
-    <div className="rounded-xl bg-gradient-to-r from-secondary/15 to-primary/10 p-4 flex gap-3 items-start">
-      <Icon name={icon} className="text-3xl text-secondary shrink-0" />
-      <div className="flex-1 space-y-1.5">
+    <div className="rounded-xl bg-gradient-to-r from-secondary/15 to-primary/10 p-3 sm:p-4 flex gap-2 sm:gap-3 items-start">
+      <Icon name={icon} className="text-2xl sm:text-3xl text-secondary shrink-0" />
+      <div className="flex-1 min-w-0 space-y-1.5">
         <div className="font-headline font-bold text-base text-on-surface">{title}</div>
         <div className="text-sm text-on-surface leading-relaxed">{children}</div>
         {steps.length > 0 && (
           <ol className="flex flex-wrap gap-2 pt-1">
             {steps.map((s, i) => (
-              <li key={i} className="flex items-center gap-1.5 text-sm bg-surface-container/80 rounded-full pl-1 pr-3 py-1">
-                <span className="w-6 h-6 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">{i + 1}</span>
+              <li key={i} className="flex items-center gap-1.5 text-sm bg-surface-container/80 rounded-2xl pl-1 pr-3 py-1 max-w-full">
+                <span className="w-6 h-6 shrink-0 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">{i + 1}</span>
                 {s}
               </li>
             ))}
