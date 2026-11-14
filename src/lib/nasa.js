@@ -1,16 +1,45 @@
 // Official NASA open data APIs (api.nasa.gov, images-api.nasa.gov) with local caching.
-// DEMO_KEY is heavily rate-limited (~30 requests/hour/IP); users can paste a free key from
-// https://api.nasa.gov in Settings.
+// Requests to api.nasa.gov go, in order of preference, through:
+//   1. a personal key the visitor pasted in Settings (kept only in their browser),
+//   2. the Supabase Edge Function `nasa-proxy`, which adds the project's key server-side (never exposed),
+//   3. DEMO_KEY (~30 requests/hour/IP).
+import { cloudEnabled } from './supabase.js';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const KEY_STORAGE = 'spx.nasaApiKey';
 const CACHE_PREFIX = 'spx.cache.';
 
+/** The visitor's personal key, if they saved one in Settings. */
 export function getApiKey() {
   try {
-    return localStorage.getItem(KEY_STORAGE) || import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY';
+    return localStorage.getItem(KEY_STORAGE) || '';
   } catch {
-    return 'DEMO_KEY';
+    return '';
   }
+}
+
+/** Which route api.nasa.gov requests take: 'personal' | 'proxy' | 'demo'. */
+export function apiRoute() {
+  if (getApiKey()) return 'personal';
+  if (cloudEnabled) return 'proxy';
+  return 'demo';
+}
+
+/** Build the request for an api.nasa.gov path + query params. */
+function nasaRequest(path, params) {
+  const route = apiRoute();
+  const q = new URLSearchParams(params);
+  if (route === 'proxy') {
+    q.set('path', path);
+    return {
+      url: `${SUPABASE_URL}/functions/v1/nasa-proxy?${q}`,
+      headers: { Authorization: `Bearer ${SUPABASE_ANON}`, apikey: SUPABASE_ANON },
+    };
+  }
+  q.set('api_key', route === 'personal' ? getApiKey() : 'DEMO_KEY');
+  return { url: `https://api.nasa.gov/${path}?${q}`, headers: {} };
 }
 export function setApiKey(k) {
   try {
@@ -53,12 +82,13 @@ function writeCache(key, v) {
   }
 }
 
-async function cachedJson(cacheKey, url, ttlMs, { force = false } = {}) {
+async function cachedJson(cacheKey, req, ttlMs, { force = false } = {}) {
   if (!force) {
     const c = readCache(cacheKey, ttlMs);
     if (c) return { data: c, cached: true };
   }
-  const res = await fetch(url);
+  const { url, headers } = typeof req === 'string' ? { url: req, headers: {} } : req;
+  const res = await fetch(url, { headers });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
     try {
@@ -83,7 +113,7 @@ export async function neoFeed(start, end, opts) {
   const e = isoDate(end);
   const { data, cached } = await cachedJson(
     `neofeed.${s}.${e}`,
-    `https://api.nasa.gov/neo/rest/v1/feed?start_date=${s}&end_date=${e}&api_key=${getApiKey()}`,
+    nasaRequest('neo/rest/v1/feed', { start_date: s, end_date: e }),
     6 * HOUR,
     opts,
   );
@@ -96,14 +126,14 @@ export async function neoFeed(start, end, opts) {
 export async function neoLookup(id) {
   const { data } = await cachedJson(
     `neo.${id}`,
-    `https://api.nasa.gov/neo/rest/v1/neo/${id}?api_key=${getApiKey()}`,
+    nasaRequest(`neo/rest/v1/neo/${id}`, {}),
     72 * HOUR,
   );
   return data;
 }
 
 export async function neoStats() {
-  const { data } = await cachedJson('neostats', `https://api.nasa.gov/neo/rest/v1/stats?api_key=${getApiKey()}`, 24 * HOUR);
+  const { data } = await cachedJson('neostats', nasaRequest('neo/rest/v1/stats', {}), 24 * HOUR);
   return data;
 }
 
@@ -113,7 +143,7 @@ export async function donkiNotifications(start, end, opts) {
   const e = isoDate(end);
   const { data, cached } = await cachedJson(
     `donki.${s}.${e}`,
-    `https://api.nasa.gov/DONKI/notifications?startDate=${s}&endDate=${e}&type=all&api_key=${getApiKey()}`,
+    nasaRequest('DONKI/notifications', { startDate: s, endDate: e, type: 'all' }),
     3 * HOUR,
     opts,
   );

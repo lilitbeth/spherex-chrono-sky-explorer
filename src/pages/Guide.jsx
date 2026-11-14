@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
 import { ErrorNote, Icon, Modal, Spinner } from '../components/ui.jsx';
-import { getApiKey, nasaImages, setApiKey } from '../lib/nasa.js';
+import { apiRoute, getApiKey, nasaImages, setApiKey } from '../lib/nasa.js';
 import { useAsync } from '../lib/hooks.js';
 
 const STEPS = [
@@ -35,12 +35,14 @@ export default function Guide() {
   const { L, lang, setLang } = useI18n();
   const store = useStore();
   const imgs = useAsync(() => nasaImages('SPHEREx'), []);
-  const [key, setKey] = useState(() => (getApiKey() === 'DEMO_KEY' ? '' : getApiKey()));
+  const [key, setKey] = useState(getApiKey);
+  const [route, setRoute] = useState(apiRoute);
   const [zoom, setZoom] = useState(null);
 
   const saveKey = () => {
     setApiKey(key);
-    store.toast(key ? L('Clave de API guardada en este navegador', 'API key saved in this browser') : L('Usando DEMO_KEY', 'Using DEMO_KEY'), 'key');
+    setRoute(apiRoute());
+    store.toast(key ? L('Clave personal guardada en este navegador', 'Personal key saved in this browser') : L('Clave personal eliminada', 'Personal key removed'), 'key');
   };
   const clearCache = () => {
     try {
@@ -105,9 +107,17 @@ export default function Guide() {
               ))}
             </div>
             <label className="block text-[11px] font-label text-on-surface-variant uppercase tracking-wider pt-2">{L('Clave de api.nasa.gov', 'api.nasa.gov key')}</label>
-            <input value={key} onChange={(e) => setKey(e.target.value)} placeholder="DEMO_KEY" className="w-full bg-surface-container-high text-on-surface text-xs font-mono px-2 py-2 rounded focus:outline-none focus:ring-1 focus:ring-secondary" autoComplete="off" spellCheck="false" />
+            <input value={key} onChange={(e) => setKey(e.target.value)} placeholder={L('Opcional', 'Optional')} className="w-full bg-surface-container-high text-on-surface text-xs font-mono px-2 py-2 rounded focus:outline-none focus:ring-1 focus:ring-secondary" autoComplete="off" spellCheck="false" />
             <p className="text-[10px] text-on-surface-variant">
-              {L('DEMO_KEY permite ~30 peticiones/hora. Consigue una clave gratuita en ', 'DEMO_KEY allows ~30 requests/hour. Get a free key at ')}
+              <span className="flex items-center gap-1 text-secondary font-semibold">
+                <Icon name={route === 'proxy' ? 'lock' : route === 'personal' ? 'key' : 'warning'} className="text-sm" />
+                {route === 'proxy'
+                  ? L('Conectado a NASA mediante el servidor del proyecto (clave oculta).', 'Connected to NASA through the project server (hidden key).')
+                  : route === 'personal'
+                    ? L('Usando tu clave personal.', 'Using your personal key.')
+                    : L('Usando DEMO_KEY (~30 peticiones/hora).', 'Using DEMO_KEY (~30 requests/hour).')}
+              </span>
+              {L('Opcional: pega aquí tu propia clave gratuita de ', 'Optional: paste your own free key from ')}
               <a href="https://api.nasa.gov/" target="_blank" rel="noreferrer" className="text-secondary hover:underline">api.nasa.gov</a>.{' '}
               {L('Se guarda solo en este navegador.', 'It is stored only in this browser.')}
             </p>

@@ -68,7 +68,7 @@ npm run dev        # http://localhost:5173
 npm run build      # static build in dist/
 ```
 
-Optional: copy `.env.example` to `.env` and set `VITE_NASA_API_KEY` (free at https://api.nasa.gov). Without it the
+Optional: copy `.env.example` to `.env` and set the Supabase values (see below). Without a NASA key the
 app uses `DEMO_KEY` (≈30 requests/hour) and caches responses in the browser; users can also paste a key in
 *Quick Guide → Settings*.
 
@@ -85,6 +85,21 @@ the browser and can be exported/imported as a JSON file.
 4. Put the project URL and the **anon** public key in `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) and as
    repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` for the Pages build.
 
+### Hidden NASA API key (Edge Function proxy)
+
+The api.nasa.gov key is never shipped to the browser. Calls to NeoWs and DONKI go through the Supabase Edge Function
+[`supabase/functions/nasa-proxy`](supabase/functions/nasa-proxy/index.ts), which only forwards the endpoints the app
+uses and adds the key from a server-side secret:
+
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
+npx supabase secrets set NASA_API_KEY=<your key>
+npx supabase functions deploy nasa-proxy
+```
+
+Without Supabase the app falls back to `DEMO_KEY`; visitors can also paste their own key in *Quick Guide → Settings*.
+
 ## Simple mode
 
 The site opens in **Simple mode** (larger text, plain-language names and step-by-step help boxes, technical controls
@@ -93,7 +108,7 @@ hidden) so it works for all ages. The `Simple / Expert` button in the header swi
 ## Deploy
 
 Pushing to `main` builds and publishes to **GitHub Pages** via `.github/workflows/deploy.yml`
-(enable *Settings → Pages → Source: GitHub Actions*). Add a `NASA_API_KEY` repository secret to embed your key.
+(enable *Settings → Pages → Source: GitHub Actions*). The NASA key is not part of the build; see the Edge Function proxy below.
 
 ## AI disclosure
 
