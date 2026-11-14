@@ -5,7 +5,9 @@ const StoreContext = createContext(null);
 const KEY = 'spx.state.v1';
 
 const DEFAULT = {
-  profile: { name: 'Dr. E. Vance', id: '9041' },
+  profile: { name: '', id: String(Math.floor(1000 + Math.random() * 9000)), avatar: 'rocket_launch' },
+  simple: true, // "Modo sencillo": friendlier UI for all ages
+  welcomed: false,
   classifications: [], // { id, targetId, targetName, cls, notes, time, truth }
   votes: {}, // targetId -> 'real' | 'artifact' | 'doubtful'
   notifications: [], // { id, text: {es,en}, icon, time, read }
@@ -94,7 +96,30 @@ export function StoreProvider({ children }) {
 
   const setProfile = useCallback((p) => setState((s) => ({ ...s, profile: { ...s.profile, ...p } })), []);
 
-  const resetAll = useCallback(() => setState(DEFAULT), []);
+  const resetAll = useCallback(() => setState((s) => ({ ...DEFAULT, simple: s.simple, welcomed: true })), []);
+  const setSimple = useCallback((v) => setState((s) => ({ ...s, simple: v })), []);
+  const setWelcomed = useCallback(() => setState((s) => ({ ...s, welcomed: true })), []);
+
+  // Cloud sync helpers: merge remote progress with local (union of classifications, max of counters).
+  const mergeRemote = useCallback((remote) => {
+    if (!remote) return;
+    setState((s) => {
+      const byId = new Map([...(remote.classifications || []), ...s.classifications].map((c) => [c.id, c]));
+      return {
+        ...s,
+        profile: { ...s.profile, ...(remote.profile || {}), name: remote.profile?.name || s.profile.name },
+        classifications: [...byId.values()].sort((a, b) => b.time - a.time),
+        votes: { ...(remote.votes || {}), ...s.votes },
+        acknowledged: { ...(remote.acknowledged || {}), ...s.acknowledged },
+        quiz: {
+          answered: Math.max(s.quiz.answered, remote.quiz?.answered || 0),
+          correct: Math.max(s.quiz.correct, remote.quiz?.correct || 0),
+          bestStreak: Math.max(s.quiz.bestStreak, remote.quiz?.bestStreak || 0),
+        },
+        simple: remote.simple ?? s.simple,
+      };
+    });
+  }, []);
 
   // ---- Processing queue (runs async tasks one at a time, survives page navigation) ----
   const runningRef = useRef(false);
@@ -139,9 +164,10 @@ export function StoreProvider({ children }) {
     () => ({
       ...state, toasts, toast, notify, markNotificationsRead, addClassification, removeClassification, vote,
       recordQuiz, acknowledge, setProfile, resetAll, jobs, enqueue, removeJob, retryJob, xp, level,
+      setSimple, setWelcomed, mergeRemote, persistable: state,
     }),
     [state, toasts, toast, notify, markNotificationsRead, addClassification, removeClassification, vote, recordQuiz,
-      acknowledge, setProfile, resetAll, jobs, enqueue, removeJob, retryJob, xp, level],
+      acknowledge, setProfile, resetAll, jobs, enqueue, removeJob, retryJob, xp, level, setSimple, setWelcomed, mergeRemote],
   );
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

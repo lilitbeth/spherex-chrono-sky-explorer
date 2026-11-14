@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from '../store/AppStore.jsx';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 
@@ -94,6 +94,42 @@ export function ErrorNote({ error, onRetry }) {
           {L('Reintentar', 'Retry')}
         </button>
       )}
+    </div>
+  );
+}
+
+/** Renders children only in expert mode. */
+export function Advanced({ children }) {
+  const { simple } = useStore();
+  return simple ? null : children;
+}
+
+/** Plain-language explanation box shown in simple mode (title, text and numbered steps). */
+export function Explain({ icon = 'lightbulb', title, children, steps = [] }) {
+  const { simple } = useStore();
+  const { L } = useI18n();
+  const [hidden, setHidden] = useState(false);
+  if (!simple || hidden) return null;
+  return (
+    <div className="rounded-xl bg-gradient-to-r from-secondary/15 to-primary/10 p-4 flex gap-3 items-start">
+      <Icon name={icon} className="text-3xl text-secondary shrink-0" />
+      <div className="flex-1 space-y-1.5">
+        <div className="font-headline font-bold text-base text-on-surface">{title}</div>
+        <div className="text-sm text-on-surface leading-relaxed">{children}</div>
+        {steps.length > 0 && (
+          <ol className="flex flex-wrap gap-2 pt-1">
+            {steps.map((s, i) => (
+              <li key={i} className="flex items-center gap-1.5 text-sm bg-surface-container/80 rounded-full pl-1 pr-3 py-1">
+                <span className="w-6 h-6 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                {s}
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+      <button type="button" onClick={() => setHidden(true)} className="text-on-surface-variant hover:text-on-surface" aria-label={L('Ocultar ayuda', 'Hide help')} title={L('Ocultar ayuda', 'Hide help')}>
+        <Icon name="close" />
+      </button>
     </div>
   );
 }

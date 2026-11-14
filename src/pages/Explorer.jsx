@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
-import { Icon, ProgressBar, SourceBadge, Spinner } from '../components/ui.jsx';
+import { Advanced, Explain, Icon, ProgressBar, SourceBadge, Spinner } from '../components/ui.jsx';
 import { CutoutCanvas, fetchCutout, SkyThumb, useCutout } from '../components/Sky.jsx';
 import { SPHEREX_WAVELENGTHS, SURVEYS, nearestFrame, tanToSky, skyToTan, SPHEREX_BLANK_FRAMES } from '../lib/hips.js';
 import { renderDifference, renderRGB, COLORMAPS } from '../lib/colormap.js';
@@ -357,6 +357,16 @@ export default function Explorer() {
 
   return (
     <div className="p-4 lg:p-6 flex flex-col gap-4 max-w-[1720px] mx-auto w-full">
+      <Explain
+        icon="satellite_alt"
+        title={L('¿Qué estoy viendo?', 'What am I looking at?')}
+        steps={[L('Mira cómo parpadea la imagen', 'Watch the image blink'), L('Fíjate en el círculo azul', 'Look at the blue circle'), L('Elige qué crees que es', 'Choose what you think it is')]}
+      >
+        {L(
+          'Son fotos reales del mismo trozo de cielo tomadas en 1999, 2010 y 2025. La imagen cambia sola entre las tres fechas: si un punto “salta” de sitio, ¡es una estrella que se mueve! La línea de puntos muestra su camino.',
+          'These are real photos of the same patch of sky taken in 1999, 2010 and 2025. The picture switches between the three dates by itself: if a dot “jumps”, it is a moving star! The dotted line shows its path.',
+        )}
+      </Explain>
       {/* HUD */}
       <section className="bg-surface-container-low rounded-xl p-4 shadow-[0_4px_24px_rgba(0,0,0,0.6)] flex flex-col gap-3 relative overflow-hidden">
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-sky/15 rounded-full blur-3xl pointer-events-none" />
@@ -377,10 +387,12 @@ export default function Explorer() {
                 ))}
               </select>
             </div>
+            <Advanced>
             <span className="font-label text-telemetry text-secondary uppercase bg-surface-container-high px-2 py-1 rounded">RA: {formatRA(center[0], 2)}</span>
             <span className="font-label text-telemetry text-secondary uppercase bg-surface-container-high px-2 py-1 rounded">Dec: {formatDec(center[1], 1)}</span>
             <span className="font-label text-telemetry text-on-surface-variant bg-surface-container px-2 py-1 rounded">FOV: {fmtNum(fov * 60, 1)}′ × {fmtNum((fov * 60 * H) / W, 1)}′</span>
             <span className="font-label text-telemetry text-outline bg-surface-container px-2 py-1 rounded">{L('Escala', 'Scale')}: {fmtNum(scale * 3600, 2)}″/px</span>
+            </Advanced>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5 bg-surface-container px-2 py-1 rounded">
@@ -409,6 +421,7 @@ export default function Explorer() {
             </button>
           </div>
         </div>
+        <Advanced>
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 items-center relative">
           <div className="xl:col-span-5 flex items-center gap-3">
             <div className="flex flex-col shrink-0">
@@ -446,6 +459,7 @@ export default function Explorer() {
             ))}
           </div>
         </div>
+        </Advanced>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
@@ -882,6 +896,7 @@ export default function Explorer() {
       </div>
 
       {/* Bottom stats */}
+      <Advanced>
       <section className="bg-surface-container-low rounded-xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Stat icon="task_alt" tone="sky" value={fmtNum(store.classifications.length)} label={L('Tus clasificaciones guardadas', 'Your saved classifications')} />
         <Stat icon="rocket_launch" tone="secondary" value={stats.data ? fmtNum(stats.data.near_earth_object_count) : stats.loading ? '…' : '—'} label={L('Objetos cercanos a la Tierra en NASA NeoWs', 'Near-Earth objects in NASA NeoWs')} />
@@ -906,6 +921,7 @@ export default function Explorer() {
           `Note: 2MASS and AllWISE epochs are approximate mean epochs; proper motions are literature values (SIMBAD/Gaia DR3). Language: ${lang.toUpperCase()}.`,
         )}
       </p>
+      </Advanced>
     </div>
   );
 }

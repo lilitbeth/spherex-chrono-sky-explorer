@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
-import { Icon, ProgressBar, Spinner } from '../components/ui.jsx';
+import { Explain, Icon, ProgressBar, Spinner } from '../components/ui.jsx';
 import { CutoutCanvas, useCutout } from '../components/Sky.jsx';
 import { MOVING_TARGETS, totalPM } from '../lib/targets.js';
 import { propagate } from '../lib/coords.js';
@@ -108,6 +108,12 @@ export default function Citizen() {
         </Link>
       </div>
 
+      <Explain icon="sports_esports" title={L('¡Juega a encontrar lo que se mueve!', 'Play: find what moves!')} steps={[L('Mira la imagen parpadear', 'Watch the image blink'), L('¿Algo salta de sitio?', 'Does anything jump?'), L('Responde y gana puntos', 'Answer and earn points')]}>
+        {L(
+          'Cada acierto te da puntos para subir de nivel. Si creas una cuenta, tus puntos y medallas se guardan aunque cambies de dispositivo.',
+          'Each right answer gives you points to level up. If you create an account, your points and badges are saved even if you switch devices.',
+        )}
+      </Explain>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl bg-surface-container flex items-center gap-4">
           <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center text-primary">

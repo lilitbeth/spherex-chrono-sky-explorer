@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
-import { ErrorNote, Icon, SourceBadge, Spinner } from '../components/ui.jsx';
+import { Advanced, ErrorNote, Explain, Icon, SourceBadge, Spinner } from '../components/ui.jsx';
 import { SkyThumb, fetchCutout } from '../components/Sky.jsx';
 import OrbitDiagram, { PMDiagram } from '../components/OrbitDiagram.jsx';
 import { neoFeed, neoLookup } from '../lib/nasa.js';
@@ -249,6 +249,16 @@ export default function Candidates() {
 
       <div className="px-4 lg:px-8 py-6 w-full flex flex-col xl:flex-row gap-6 items-start">
         <div className="flex-1 w-full space-y-4 min-w-0">
+          <Explain
+            icon="near_me"
+            title={L('Asteroides y estrellas viajeras', 'Asteroids and travelling stars')}
+            steps={[L('Toca una fila', 'Tap a row'), L('Mira su órbita a la derecha', 'See its orbit on the right'), L('Pulsa 👍 si crees que es real', 'Press 👍 if you think it is real')]}
+          >
+            {L(
+              'Arriba aparecen los asteroides que pasan cerca de la Tierra esta semana (datos de NASA). “LD” es la distancia a la Luna: 10 LD significa diez veces más lejos que la Luna. “Potencialmente peligroso” es una categoría técnica: el asteroide es grande y su órbita pasa cerca, no que vaya a chocar.',
+              'At the top are the asteroids passing near Earth this week (NASA data). “LD” is the distance to the Moon: 10 LD means ten times farther than the Moon. “Potentially hazardous” is a technical category: the asteroid is large and its orbit passes close, not that it will hit us.',
+            )}
+          </Explain>
           <ErrorNote error={feed.error} onRetry={feed.reload} />
           <div className="bg-surface-container/90 rounded-xl p-4 shadow-md space-y-3">
             <div className="flex items-center justify-between gap-4 flex-wrap bg-surface-container-low/50 p-2 rounded-lg">
@@ -281,6 +291,7 @@ export default function Candidates() {
                 </button>
               </div>
             </div>
+            <Advanced>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
               <div className="bg-surface-container-high/60 p-2.5 rounded-lg flex flex-col justify-between">
                 <div className="flex justify-between items-center text-[10px] font-label text-on-surface-variant mb-1">
@@ -333,6 +344,7 @@ export default function Candidates() {
                 <div className="text-[9px] font-label text-on-surface-variant/70 mt-1">{desc ? L('Descendente', 'Descending') : L('Ascendente', 'Ascending')}</div>
               </div>
             </div>
+            </Advanced>
           </div>
 
           <div className="bg-surface-container rounded-xl shadow-lg overflow-hidden">

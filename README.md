@@ -72,6 +72,24 @@ Optional: copy `.env.example` to `.env` and set `VITE_NASA_API_KEY` (free at htt
 app uses `DEMO_KEY` (≈30 requests/hour) and caches responses in the browser; users can also paste a key in
 *Quick Guide → Settings*.
 
+## Accounts & cloud progress (Supabase)
+
+Users can create a free account (email + password) on the **My account** page; their profile, level, classifications
+and game progress are synced to Supabase and restored on any device. Without Supabase configured, progress is kept in
+the browser and can be exported/imported as a JSON file.
+
+1. Create a free project at https://supabase.com.
+2. In *SQL Editor*, run [`supabase/schema.sql`](supabase/schema.sql) (table `user_progress` with row-level security:
+   each user can only read/write their own row).
+3. In *Authentication → URL Configuration*, set the Site URL to your deployed URL and add it to the redirect URLs.
+4. Put the project URL and the **anon** public key in `.env` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) and as
+   repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY` for the Pages build.
+
+## Simple mode
+
+The site opens in **Simple mode** (larger text, plain-language names and step-by-step help boxes, technical controls
+hidden) so it works for all ages. The `Simple / Expert` button in the header switches to the full scientific interface.
+
 ## Deploy
 
 Pushing to `main` builds and publishes to **GitHub Pages** via `.github/workflows/deploy.yml`

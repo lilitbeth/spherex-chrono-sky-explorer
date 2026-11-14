@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
-import { Icon, ProgressBar, SourceBadge, Spinner } from '../components/ui.jsx';
+import { Advanced, Explain, Icon, ProgressBar, SourceBadge, Spinner } from '../components/ui.jsx';
 import { CutoutCanvas, useCutout } from '../components/Sky.jsx';
 import { getAllsky, sampleAllsky, spherexByteToMJy, SPHEREX_WAVELENGTHS, nearestFrame, SURVEYS, SPHEREX_DR1_TMIN, SPHEREX_DR1_TMAX, getSpherexSpectrum } from '../lib/hips.js';
 import { lut } from '../lib/colormap.js';
@@ -220,12 +220,20 @@ export default function Archive() {
         </div>
       </div>
 
+      <Explain icon="public" title={L('El cielo entero en una sola imagen', 'The whole sky in one picture')} steps={[L('Mueve el ratón por el mapa', 'Move the mouse over the map'), L('Haz clic en un cuadrado', 'Click a square'), L('Compara las fotos a la derecha', 'Compare the photos on the right')]}>
+        {L(
+          'Este óvalo es todo el cielo “aplanado”, como un mapa del mundo. La banda brillante es nuestra galaxia, la Vía Láctea. Los cuadrados marcan lugares interesantes, como nubes donde nacen estrellas.',
+          'This oval is the whole sky “flattened”, like a world map. The bright band is our galaxy, the Milky Way. The squares mark interesting places, like clouds where stars are born.',
+        )}
+      </Explain>
+      <Advanced>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative">
         <Kpi icon="public" tone="text-secondary" label={L('Área cartografiada', 'Mapped area')} value="41,253" unit={L('grados²', 'deg²')} sub={L('100% del cielo en DR1 (MOC)', '100% of the sky in DR1 (MOC)')} bar={1} barTone="secondary" />
         <Kpi icon="grain" tone="text-tertiary" label={L('Canales espectrales', 'Spectral channels')} value="102" unit="λ" sub="0.75 – 5.00 µm (R = 35–128)" bar={100 / 102} barTone="tertiary" />
         <Kpi icon="reorder" tone="text-secondary" label={L('Ventana DR1', 'DR1 window')} value={fmtMonth(dr1Start, lang)} unit={`→ ${fmtMonth(dr1End, lang)}`} sub={L('Surveys 1 y 2 publicados', 'Surveys 1 and 2 released')} />
         <Kpi icon="sync" tone="text-primary" label={L(`Progreso survey ${cur.k} (actual)`, `Survey ${cur.k} progress (current)`)} value={`${fmtNum(cur.progress * 100, 1)}%`} unit={L('completado', 'complete')} sub={`${L('Cierre', 'Ends')}: ${fmtDate(cur.end, lang)}`} bar={cur.progress} barTone="primary" valueCls="text-primary" />
       </div>
+      </Advanced>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 relative">
         <div className="xl:col-span-8 flex flex-col rounded-xl bg-surface-container/80 backdrop-blur-lg p-5 shadow-md">

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
-import { Icon, Modal, ProgressBar, SourceBadge, Spinner } from '../components/ui.jsx';
+import { Explain, Icon, Modal, ProgressBar, SourceBadge, Spinner } from '../components/ui.jsx';
 import { SkyThumb } from '../components/Sky.jsx';
 import { getSpherexSpectrum, SPHEREX_WAVELENGTHS, SPHEREX_BLANK_FRAMES, SURVEYS } from '../lib/hips.js';
 import { FEATURES, LVF_BANDS, fitSpectrum, bestTemperature, synthColor, integratedIntensity, frameInfo } from '../lib/spectrum.js';
@@ -140,6 +140,12 @@ export default function SpectraLab() {
 
   return (
     <div className="flex flex-col w-full p-4 lg:p-6 space-y-6">
+      <Explain icon="palette" title={L('Los colores que no podemos ver', 'The colours we cannot see')} steps={[L('Elige un objeto arriba', 'Pick an object above'), L('Pasa el ratón por la línea', 'Hover over the line'), L('Busca picos y valles', 'Look for peaks and dips')]}>
+        {L(
+          'Igual que un arcoíris separa la luz en colores, SPHEREx separa la luz infrarroja en 102 “colores”. La línea verde muestra cuánta luz llega en cada uno. Un valle en la franja amarilla “H₂O” significa que hay hielo de agua; un pico en “PAH” indica moléculas de carbono parecidas al hollín.',
+          'Just as a rainbow splits light into colours, SPHEREx splits infrared light into 102 “colours”. The green line shows how much light arrives in each one. A dip in the yellow “H₂O” stripe means there is water ice; a peak at “PAH” points to soot-like carbon molecules.',
+        )}
+      </Explain>
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface-container-low p-4 rounded-xl shadow-lg relative overflow-hidden">
         <div className="absolute -right-16 -top-16 w-48 h-48 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex items-center gap-3">

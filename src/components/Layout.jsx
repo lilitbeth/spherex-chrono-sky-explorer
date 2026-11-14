@@ -2,19 +2,26 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 import { useStore } from '../store/AppStore.jsx';
+import { useAuth } from '../store/AuthProvider.jsx';
 import { Icon, Toasts } from './ui.jsx';
 import { useSpherexOrbit } from '../lib/useOrbit.js';
 import { currentSurvey, fmtMonth } from '../lib/mission.js';
 import { ALL_TARGETS } from '../lib/targets.js';
 import { formatDec, formatRA, parseCoords } from '../lib/coords.js';
 
+// `s*` labels are the plain-language names shown in simple mode.
 export const MAIN_NAV = [
-  { to: '/explorer', icon: 'satellite_alt', es: 'Explorador del Cielo', en: 'Sky Explorer' },
-  { to: '/candidates', icon: 'flare', es: 'Candidatos de Movimiento', en: 'Motion Candidates' },
-  { to: '/archive', icon: 'history_toggle_off', es: 'Archivo de Épocas (2025-2027)', en: 'Epoch Archive (2025-2027)' },
-  { to: '/spectra', icon: 'query_stats', es: 'Laboratorio de Espectros', en: 'Spectra Lab' },
-  { to: '/citizen', icon: 'groups', es: 'Ciencia Ciudadana', en: 'Citizen Science' },
+  { to: '/home', icon: 'home', es: 'Inicio', en: 'Home', sEs: 'Inicio', sEn: 'Home', simpleOnly: true },
+  { to: '/explorer', icon: 'satellite_alt', es: 'Explorador del Cielo', en: 'Sky Explorer', sEs: 'Estrellas que se mueven', sEn: 'Moving stars' },
+  { to: '/candidates', icon: 'flare', es: 'Candidatos de Movimiento', en: 'Motion Candidates', sEs: 'Asteroides cercanos', sEn: 'Nearby asteroids' },
+  { to: '/archive', icon: 'history_toggle_off', es: 'Archivo de Épocas (2025-2027)', en: 'Epoch Archive (2025-2027)', sEs: 'Mapa de todo el cielo', sEn: 'Whole-sky map' },
+  { to: '/spectra', icon: 'query_stats', es: 'Laboratorio de Espectros', en: 'Spectra Lab', sEs: 'Colores invisibles', sEn: 'Invisible colours' },
+  { to: '/citizen', icon: 'groups', es: 'Ciencia Ciudadana', en: 'Citizen Science', sEs: 'Juega y aprende', sEn: 'Play & learn' },
 ];
+
+export function navLabel(n, simple, L) {
+  return simple ? L(n.sEs || n.es, n.sEn || n.en) : L(n.es, n.en);
+}
 
 export const DIAG_NAV = [
   { to: '/diagnostics', icon: 'vital_signs', es: 'Diagnóstico Espectral', en: 'Spectral Diagnostics' },
@@ -25,6 +32,8 @@ export const DIAG_NAV = [
 
 function Sidebar({ open, onClose }) {
   const { L, lang, fmtNum } = useI18n();
+  const { simple } = useStore();
+  const [showTools, setShowTools] = useState(false);
   const orbit = useSpherexOrbit(2000);
   const survey = currentSurvey();
   const linkCls = ({ isActive }) =>
@@ -50,7 +59,7 @@ function Sidebar({ open, onClose }) {
               <Icon name="close" />
             </button>
           </div>
-          <div className="px-4 py-3 bg-surface-container/60">
+          <div className={`px-4 py-3 bg-surface-container/60 ${simple ? 'hidden' : ''}`}>
             <div className="flex items-center justify-between text-[11px] font-label text-on-surface-variant uppercase tracking-wider mb-2">
               <span>{L('Telemetría de misión', 'Mission telemetry')}</span>
               <span className={`flex items-center gap-1 ${orbit?.live === false ? 'text-tertiary' : 'text-secondary'}`}>
@@ -76,24 +85,37 @@ function Sidebar({ open, onClose }) {
           <div className="px-3 pt-4">
             <span className="px-2 text-[10px] font-label uppercase text-on-surface-variant tracking-wider">{L('Espacios de trabajo', 'Workspaces')}</span>
             <nav className="mt-2 space-y-1">
-              {MAIN_NAV.map((n) => (
+              {MAIN_NAV.filter((n) => simple || !n.simpleOnly).map((n) => (
                 <NavLink key={n.to} to={n.to} className={linkCls} onClick={onClose}>
                   <Icon name={n.icon} className="text-base" />
-                  {L(n.es, n.en)}
+                  {navLabel(n, simple, L)}
                 </NavLink>
               ))}
+              <NavLink to="/account" className={linkCls} onClick={onClose}>
+                <Icon name="account_circle" className="text-base" />
+                {L('Mi cuenta', 'My account')}
+              </NavLink>
             </nav>
           </div>
           <div className="px-3 pt-4 pb-4">
-            <span className="px-2 text-[10px] font-label uppercase text-on-surface-variant tracking-wider">{L('Diagnóstico & Accesos', 'Diagnostics & Access')}</span>
-            <nav className="mt-2 space-y-1">
-              {DIAG_NAV.map((n) => (
-                <NavLink key={n.to} to={n.to} className={linkCls} onClick={onClose}>
-                  <Icon name={n.icon} className="text-base" />
-                  {L(n.es, n.en)}
-                </NavLink>
-              ))}
-            </nav>
+            {simple ? (
+              <button type="button" onClick={() => setShowTools((s) => !s)} className="w-full flex items-center justify-between px-2 text-[10px] font-label uppercase text-on-surface-variant tracking-wider hover:text-on-surface">
+                {L('Herramientas para expertos', 'Expert tools')}
+                <Icon name={showTools ? 'expand_less' : 'expand_more'} className="text-sm" />
+              </button>
+            ) : (
+              <span className="px-2 text-[10px] font-label uppercase text-on-surface-variant tracking-wider">{L('Diagnóstico & Accesos', 'Diagnostics & Access')}</span>
+            )}
+            {(!simple || showTools) && (
+              <nav className="mt-2 space-y-1">
+                {DIAG_NAV.map((n) => (
+                  <NavLink key={n.to} to={n.to} className={linkCls} onClick={onClose}>
+                    <Icon name={n.icon} className="text-base" />
+                    {L(n.es, n.en)}
+                  </NavLink>
+                ))}
+              </nav>
+            )}
           </div>
         </div>
         <div className="p-4 bg-surface-container-lowest/80 shrink-0">
@@ -226,6 +248,7 @@ function Notifications() {
 
 function Profile() {
   const { profile, setProfile, level, xp, classifications } = useStore();
+  const { user } = useAuth();
   const { L } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -238,11 +261,11 @@ function Profile() {
     <div className="relative" ref={ref}>
       <button type="button" onClick={() => setOpen(!open)} className="flex items-center gap-2 pl-2">
         <div className="flex-col text-right hidden md:flex">
-          <span className="text-xs font-label font-medium text-on-surface">{profile.name}</span>
-          <span className="text-[10px] font-label text-secondary">#{profile.id} · Lv {level}</span>
+          <span className="text-xs font-label font-medium text-on-surface">{profile.name || L('Invitado/a', 'Guest')}</span>
+          <span className="text-[10px] font-label text-secondary">{user ? L('En la nube', 'Cloud') : L('Local', 'Local')} · {L('Nivel', 'Lv')} {level}</span>
         </div>
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-          <Icon name="person" className="text-on-primary text-[18px]" />
+          <Icon name={profile.avatar || 'person'} className="text-on-primary text-[18px]" />
         </div>
       </button>
       {open && (
@@ -261,8 +284,11 @@ function Profile() {
             <span>{L('Clasificaciones', 'Classifications')}</span>
             <span className="text-on-surface font-semibold">{classifications.length}</span>
           </div>
+          <NavLink to="/account" onClick={() => setOpen(false)} className="block text-center py-1.5 rounded bg-primary text-on-primary font-semibold">
+            {user ? L('Mi cuenta', 'My account') : L('Crear cuenta / Entrar', 'Sign up / Sign in')}
+          </NavLink>
           <NavLink to="/citizen" onClick={() => setOpen(false)} className="block text-center py-1.5 rounded bg-surface-container hover:text-secondary">
-            {L('Ver mi panel', 'Open my dashboard')}
+            {L('Ver mis logros', 'See my achievements')}
           </NavLink>
         </div>
       )}
@@ -289,8 +315,75 @@ function LangToggle() {
   );
 }
 
+function ModeToggle() {
+  const { simple, setSimple } = useStore();
+  const { L } = useI18n();
+  return (
+    <button
+      type="button"
+      onClick={() => setSimple(!simple)}
+      className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-surface-container-high/80 text-[11px] font-label text-on-surface-variant hover:text-secondary"
+      title={simple ? L('Cambiar a modo experto (más datos técnicos)', 'Switch to expert mode (more technical data)') : L('Cambiar a modo sencillo (más fácil)', 'Switch to simple mode (easier)')}
+    >
+      <Icon name={simple ? 'sentiment_satisfied' : 'science'} className="text-base" />
+      <span className="hidden sm:inline">{simple ? L('Sencillo', 'Simple') : L('Experto', 'Expert')}</span>
+    </button>
+  );
+}
+
+function Welcome() {
+  const { welcomed, setWelcomed, setSimple, simple, profile, setProfile } = useStore();
+  const { L, lang, setLang } = useI18n();
+  const navigate = useNavigate();
+  if (welcomed) return null;
+  const choice = (s) => `flex-1 p-4 rounded-xl text-left border-2 ${s ? 'border-secondary bg-secondary/10' : 'border-transparent bg-surface-container-high'}`;
+  return (
+    <div className="fixed inset-0 z-[90] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-surface-container rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-5" role="dialog" aria-modal="true">
+        <div className="text-center space-y-1">
+          <Icon name="rocket_launch" className="text-5xl text-primary" />
+          <h2 className="font-headline font-bold text-2xl">{L('¡Bienvenido/a a bordo!', 'Welcome aboard!')}</h2>
+          <p className="text-sm text-on-surface-variant">
+            {L('Explora el cielo con imágenes reales del telescopio espacial SPHEREx de NASA y descubre estrellas que se mueven.', 'Explore the sky with real images from NASA’s SPHEREx space telescope and discover stars that move.')}
+          </p>
+        </div>
+        <div className="flex gap-2 justify-center">
+          {[['es', 'Español'], ['en', 'English']].map(([l, n]) => (
+            <button key={l} type="button" onClick={() => setLang(l)} className={`px-4 py-2 rounded-lg text-sm font-label ${lang === l ? 'bg-secondary text-on-secondary font-bold' : 'bg-surface-container-high text-on-surface-variant'}`}>{n}</button>
+          ))}
+        </div>
+        <label className="block space-y-1">
+          <span className="text-sm font-label">{L('¿Cómo te llamas? (opcional)', 'What is your name? (optional)')}</span>
+          <input value={profile.name} onChange={(e) => setProfile({ name: e.target.value.slice(0, 40) })} className="w-full bg-surface-container-high text-on-surface text-base px-3 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary" placeholder={L('Tu nombre o apodo', 'Your name or nickname')} />
+        </label>
+        <div className="space-y-2">
+          <span className="text-sm font-label">{L('¿Cómo quieres ver la página?', 'How do you want to see the site?')}</span>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button type="button" onClick={() => setSimple(true)} className={choice(simple)}>
+              <Icon name="sentiment_satisfied" className="text-2xl text-secondary" />
+              <div className="font-headline font-bold">{L('Sencillo', 'Simple')}</div>
+              <div className="text-xs text-on-surface-variant">{L('Letra grande y explicaciones fáciles. Para todas las edades.', 'Larger text and easy explanations. For all ages.')}</div>
+            </button>
+            <button type="button" onClick={() => setSimple(false)} className={choice(!simple)}>
+              <Icon name="science" className="text-2xl text-primary" />
+              <div className="font-headline font-bold">{L('Experto', 'Expert')}</div>
+              <div className="text-xs text-on-surface-variant">{L('Todos los datos y herramientas científicas.', 'All the scientific data and tools.')}</div>
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button type="button" onClick={() => { setWelcomed(); navigate(simple ? '/home' : '/explorer'); }} className="flex-1 py-3 rounded-lg bg-primary text-on-primary font-headline font-bold">{L('¡Empezar!', 'Let’s go!')}</button>
+          <button type="button" onClick={() => { setWelcomed(); navigate('/account'); }} className="flex-1 py-3 rounded-lg bg-surface-container-high text-on-surface font-label">{L('Crear cuenta para guardar', 'Create an account to save')}</button>
+        </div>
+        <p className="text-[11px] text-center text-on-surface-variant">{L('Puedes cambiar el modo en cualquier momento con el botón de la parte superior.', 'You can change the mode anytime with the button at the top.')}</p>
+      </div>
+    </div>
+  );
+}
+
 function Header({ onMenu }) {
   const { L } = useI18n();
+  const { simple } = useStore();
   return (
     <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-surface/90 backdrop-blur-xl z-30 shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
       <div className="h-16 w-full px-3 sm:px-6 flex items-center justify-between gap-3">
@@ -303,7 +396,7 @@ function Header({ onMenu }) {
           </span>
         </div>
         <nav className="hidden 2xl:flex items-center gap-1 text-xs font-label">
-          {MAIN_NAV.map((n) => (
+          {MAIN_NAV.filter((n) => !n.simpleOnly).map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -311,7 +404,7 @@ function Header({ onMenu }) {
                 `px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-surface-container-high text-secondary font-semibold' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`
               }
             >
-              {L(n.es, n.en)}
+              {navLabel(n, simple, L)}
             </NavLink>
           ))}
         </nav>
@@ -323,6 +416,7 @@ function Header({ onMenu }) {
             <Icon name="help" className="text-base" />
             <span className="hidden xl:inline">{L('Guía Rápida', 'Quick Guide')}</span>
           </NavLink>
+          <ModeToggle />
           <LangToggle />
           <Notifications />
           <Profile />
@@ -334,10 +428,15 @@ function Header({ onMenu }) {
 
 export default function Layout({ children }) {
   const [menu, setMenu] = useState(false);
+  const { simple } = useStore();
   const loc = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [loc.pathname]);
+  // Simple mode scales every rem-based size (text, spacing) up ~10% for readability.
+  useEffect(() => {
+    document.documentElement.style.fontSize = simple ? '17.5px' : '16px';
+  }, [simple]);
   return (
     <div className="min-h-screen bg-background">
       <Sidebar open={menu} onClose={() => setMenu(false)} />
@@ -357,6 +456,7 @@ export default function Layout({ children }) {
         </main>
       </div>
       <Toasts />
+      <Welcome />
     </div>
   );
 }

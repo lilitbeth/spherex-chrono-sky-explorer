@@ -3,6 +3,8 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import { Spinner } from './components/ui.jsx';
 
+const Home = lazy(() => import('./pages/Home.jsx'));
+const Account = lazy(() => import('./pages/Account.jsx'));
 const Explorer = lazy(() => import('./pages/Explorer.jsx'));
 const Candidates = lazy(() => import('./pages/Candidates.jsx'));
 const Archive = lazy(() => import('./pages/Archive.jsx'));
@@ -26,7 +28,9 @@ export default function App() {
           }
         >
           <Routes>
-            <Route path="/" element={<Navigate to="/explorer" replace />} />
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/account" element={<Account />} />
             <Route path="/explorer" element={<Explorer />} />
             <Route path="/candidates" element={<Candidates />} />
             <Route path="/archive" element={<Archive />} />
@@ -37,7 +41,7 @@ export default function App() {
             <Route path="/queue" element={<Queue />} />
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/guide" element={<Guide />} />
-            <Route path="*" element={<Navigate to="/explorer" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </Suspense>
       </Layout>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as satellite from 'satellite.js';
 import { useI18n } from '../i18n/I18nProvider.jsx';
-import { Icon, SourceBadge, Spinner } from '../components/ui.jsx';
+import { Explain, Icon, SourceBadge, Spinner } from '../components/ui.jsx';
 import { spherexOMM } from '../lib/nasa.js';
 import { propagateAt } from '../lib/useOrbit.js';
 import { sunPosition, dateToJD } from '../lib/orbit.js';
@@ -230,6 +230,12 @@ export default function Telemetry() {
         </div>
       </div>
 
+      <Explain icon="travel_explore" title={L('¿Dónde está el telescopio ahora mismo?', 'Where is the telescope right now?')}>
+        {L(
+          'El punto azul es SPHEREx. Da una vuelta a la Tierra cada 98 minutos, a unos 650 km de altura, siempre en la frontera entre el día y la noche para que el Sol no le moleste. El punto amarillo marca dónde es mediodía.',
+          'The blue dot is SPHEREx. It circles Earth every 98 minutes, about 650 km up, always along the line between day and night so the Sun does not get in its way. The yellow dot marks where it is noon.',
+        )}
+      </Explain>
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-8 rounded-xl bg-surface-container p-4 space-y-3">
           <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden bg-surface-container-lowest">
