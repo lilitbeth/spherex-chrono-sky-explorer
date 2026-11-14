@@ -95,7 +95,7 @@ export default function Citizen() {
             <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
             {L('Programa de validación colaborativa', 'Collaborative validation programme')}
           </div>
-          <h1 className="font-headline font-bold text-2xl lg:text-3xl tracking-tight text-on-surface">{L('Ciencia Ciudadana', 'Citizen Science')}</h1>
+          <h1 className="font-headline font-bold text-2xl lg:text-3xl tracking-tight text-on-surface">{store.simple ? L('Juega y aprende', 'Play & learn') : L('Ciencia Ciudadana', 'Citizen Science')}</h1>
           <p className="text-xs font-body text-on-surface-variant max-w-2xl mt-1">
             {L(
               'Entrena tu ojo con imágenes reales de 2MASS y SPHEREx, revisa tu historial y lleva tus habilidades a los proyectos oficiales de ciencia ciudadana de NASA.',

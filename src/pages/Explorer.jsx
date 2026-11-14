@@ -33,10 +33,10 @@ const TRACERS = [
 ];
 
 const CLASSES = [
-  { id: 'solar', icon: 'flare', es: 'Objeto del Sistema Solar', en: 'Solar System object', subEs: 'Asteroide NEO / Cinturón de Kuiper / Cometa', subEn: 'NEO asteroid / Kuiper Belt / Comet' },
-  { id: 'pm', icon: 'wb_twilight', es: 'Movimiento propio estelar', en: 'Stellar proper motion', subEs: 'Estrella cercana o enana marrón fría (T/Y)', subEn: 'Nearby star or cold brown dwarf (T/Y)' },
-  { id: 'variable', icon: 'stars', es: 'Estrella variable o transitorio', en: 'Variable star or transient', subEs: 'Cambio de brillo sin desplazamiento angular', subEn: 'Brightness change without angular shift' },
-  { id: 'artifact', icon: 'grain', es: 'Artefacto óptico o rayo cósmico', en: 'Optical artefact or cosmic ray', subEs: 'Píxel caliente, persistencia o difracción', subEn: 'Hot pixel, persistence or diffraction' },
+  { id: 'solar', icon: 'flare', es: 'Objeto del Sistema Solar', en: 'Solar System object', subEs: 'Asteroide NEO / Cinturón de Kuiper / Cometa', subEn: 'NEO asteroid / Kuiper Belt / Comet', sEs: 'Algo de nuestro Sistema Solar', sEn: 'Something in our Solar System', sSubEs: 'Un asteroide o un cometa', sSubEn: 'An asteroid or a comet' },
+  { id: 'pm', icon: 'wb_twilight', es: 'Movimiento propio estelar', en: 'Stellar proper motion', subEs: 'Estrella cercana o enana marrón fría (T/Y)', subEn: 'Nearby star or cold brown dwarf (T/Y)', sEs: 'Una estrella que se mueve', sEn: 'A moving star', sSubEs: 'Una estrella cercana a nosotros', sSubEn: 'A star close to us' },
+  { id: 'variable', icon: 'stars', es: 'Estrella variable o transitorio', en: 'Variable star or transient', subEs: 'Cambio de brillo sin desplazamiento angular', subEn: 'Brightness change without angular shift', sEs: 'Una estrella que cambia de brillo', sEn: 'A star that changes brightness', sSubEs: 'Brilla más o menos, pero no se mueve', sSubEn: 'It gets brighter or dimmer but stays put' },
+  { id: 'artifact', icon: 'grain', es: 'Artefacto óptico o rayo cósmico', en: 'Optical artefact or cosmic ray', subEs: 'Píxel caliente, persistencia o difracción', subEn: 'Hot pixel, persistence or diffraction', sEs: 'Un fallo de la imagen', sEn: 'A glitch in the image', sSubEs: 'Un punto que solo sale en una foto', sSubEn: 'A dot that shows up in only one photo' },
 ];
 
 function defaultFov(t) {
@@ -437,10 +437,10 @@ export default function Explorer() {
             </Advanced>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-surface-container px-2 py-1 rounded">
+            <div className="flex items-center gap-1.5 bg-surface-container px-2 py-1 rounded max-w-full min-w-0">
               <Icon name="palette" className="text-[18px] text-sky" />
-              <span className="font-label text-label-sm text-outline">{L('Paleta', 'Palette')}:</span>
-              <select value={colormap} onChange={(e) => setColormap(e.target.value)} className="bg-transparent text-secondary font-label text-label-sm focus:outline-none cursor-pointer">
+              <span className="hidden sm:inline font-label text-label-sm text-outline">{L('Paleta', 'Palette')}:</span>
+              <select value={colormap} onChange={(e) => setColormap(e.target.value)} className="min-w-0 flex-1 truncate bg-transparent text-secondary font-label text-label-sm focus:outline-none cursor-pointer" aria-label={L('Paleta', 'Palette')}>
                 {COLORMAPS.map((c) => (
                   <option key={c} value={c}>{L(CMAP_LABELS[c])}</option>
                 ))}
@@ -808,15 +808,24 @@ export default function Explorer() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Icon name="diversity_3" className="text-sky text-[22px]" />
-                <h2 className="font-headline text-headline-md text-on-surface">{L('Validación ciudadana', 'Citizen validation')}</h2>
+                <h2 className="font-headline text-headline-md text-on-surface">
+                  {store.simple ? L('Tu turno: ¿qué ves?', 'Your turn: what do you see?') : L('Validación ciudadana', 'Citizen validation')}
+                </h2>
               </div>
-              <span className="px-2 py-0.5 rounded bg-surface-container text-secondary font-label text-telemetry">{L('MODO INVESTIGADOR', 'RESEARCHER MODE')}</span>
+              <Advanced>
+                <span className="px-2 py-0.5 rounded bg-surface-container text-secondary font-label text-telemetry">{L('MODO INVESTIGADOR', 'RESEARCHER MODE')}</span>
+              </Advanced>
             </div>
             <p className="font-body text-xs text-on-surface-variant">
-              {L(
-                'Compara las épocas para decidir si el objeto marcado se desplaza (movimiento propio o Sistema Solar), cambia de brillo o es un artefacto.',
-                'Compare the epochs to decide whether the marked object moves (proper motion or Solar System), changes brightness, or is an artefact.',
-              )}
+              {store.simple
+                ? L(
+                    'Mira las fotos de cada fecha: ¿el punto del centro cambia de lugar, cambia de brillo o parece un fallo de la imagen?',
+                    'Look at the photo from each date: does the dot in the middle change place, change brightness, or look like a glitch in the image?',
+                  )
+                : L(
+                    'Compara las épocas para decidir si el objeto marcado se desplaza (movimiento propio o Sistema Solar), cambia de brillo o es un artefacto.',
+                    'Compare the epochs to decide whether the marked object moves (proper motion or Solar System), changes brightness, or is an artefact.',
+                  )}
             </p>
             <div className="bg-surface-container p-3 rounded flex flex-col gap-2">
               <div className="flex items-center justify-between gap-2">
@@ -824,6 +833,18 @@ export default function Explorer() {
                 {target.spt && <span className="bg-sky/20 text-sky px-2 py-0.5 rounded font-label text-telemetry font-bold shrink-0">{target.spt}</span>}
               </div>
               <p className="text-[11px] text-on-surface-variant">{L(target.desc)}</p>
+              {store.simple ? (
+                <div className="grid grid-cols-2 gap-2 font-label text-telemetry">
+                  <div className="bg-surface-container-high p-2 rounded">
+                    <span className="text-outline block">{L('Cuánto se movió desde 1999', 'How far it moved since 1999')}</span>
+                    <span className="text-secondary font-semibold text-sm">{fmtNum(disp, 1)}″</span>
+                  </div>
+                  <div className="bg-surface-container-high p-2 rounded">
+                    <span className="text-outline block">{L('Distancia', 'Distance')}</span>
+                    <span className="text-sky font-semibold text-sm">{target.dist ? `${fmtNum(target.dist * 3.2616, 1)} ${L('años luz', 'light-years')}` : '—'}</span>
+                  </div>
+                </div>
+              ) : (
               <div className="grid grid-cols-2 gap-2 font-label text-telemetry">
                 <div className="bg-surface-container-high p-2 rounded">
                   <span className="text-outline block">{L('Desplazamiento 2MASS→SPHEREx', 'Shift 2MASS→SPHEREx')}</span>
@@ -842,6 +863,7 @@ export default function Explorer() {
                   <span className="text-sky font-semibold text-sm">{target.dist ? `${fmtNum(target.dist, 2)} pc` : '—'}</span>
                 </div>
               </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -868,15 +890,15 @@ export default function Explorer() {
             </div>
 
             <div className="flex flex-col gap-2 pt-1">
-              <span className="font-headline text-headline-sm text-on-surface">{L('¿Qué tipo de evento astrométrico observas?', 'What kind of astrometric event do you see?')}</span>
+              <span className="font-headline text-headline-sm text-on-surface">{store.simple ? L('¿Qué crees que es?', 'What do you think it is?') : L('¿Qué tipo de evento astrométrico observas?', 'What kind of astrometric event do you see?')}</span>
               <div className="flex flex-col gap-1.5" role="radiogroup">
                 {CLASSES.map((c) => (
                   <label key={c.id} className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all ${cls === c.id ? 'bg-surface-container-high ring-1 ring-sky/60' : 'bg-surface-container hover:bg-surface-container-high'}`}>
                     <div className="flex items-center gap-2.5">
                       <input type="radio" name="cls" className="accent-sky w-4 h-4" checked={cls === c.id} onChange={() => setCls(c.id)} />
                       <div className="flex flex-col">
-                        <span className="font-label text-label-md text-on-surface font-semibold">{L(c.es, c.en)}</span>
-                        <span className="font-label text-telemetry text-outline">{L(c.subEs, c.subEn)}</span>
+                        <span className="font-label text-label-md text-on-surface font-semibold">{store.simple ? L(c.sEs, c.sEn) : L(c.es, c.en)}</span>
+                        <span className="font-label text-telemetry text-outline">{store.simple ? L(c.sSubEs, c.sSubEn) : L(c.subEs, c.subEn)}</span>
                       </div>
                     </div>
                     <Icon name={c.icon} className={`text-[20px] ${cls === c.id ? 'text-sky' : 'text-outline'}`} />

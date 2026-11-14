@@ -196,6 +196,14 @@ export default function Telemetry() {
     return <svg viewBox="0 0 200 40" className="w-full h-10" preserveAspectRatio="none"><path d={d} fill="none" stroke={color} strokeWidth="1.5" /></svg>;
   };
 
+  const legend = (
+    <>
+      <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-secondary" /> {L('Órbita previa', 'Previous orbit')}</span>
+      <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-primary" /> {L('Próxima órbita', 'Next orbit')}</span>
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-tertiary" /> {L('Punto subsolar', 'Sub-solar point')}</span>
+      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky" /> SPHEREx</span>
+    </>
+  );
   return (
     <div className="px-4 lg:px-8 py-6 space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -241,16 +249,12 @@ export default function Telemetry() {
           <div className="relative w-full aspect-[2/1] rounded-lg overflow-hidden bg-surface-container-lowest">
             <canvas ref={canvasRef} className="w-full h-full" />
             {!sat && <div className="absolute inset-0 flex items-center justify-center"><Spinner className="text-secondary text-3xl" /></div>}
-            <div className="absolute bottom-2 left-2 bg-surface-container-high/90 px-3 py-1.5 rounded font-label text-[11px] flex flex-wrap gap-3">
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-secondary" /> {L('Órbita previa', 'Previous orbit')}</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-primary" /> {L('Próxima órbita', 'Next orbit')}</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-tertiary" /> {L('Punto subsolar', 'Sub-solar point')}</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky" /> SPHEREx</span>
-            </div>
+            <div className="hidden sm:flex absolute bottom-2 left-2 bg-surface-container-high/90 px-3 py-1.5 rounded font-label text-[11px] flex-wrap gap-3">{legend}</div>
             <div className="absolute top-2 right-2 bg-surface-container-high/90 px-3 py-1 rounded font-label text-[11px] text-on-surface">
               {simTime.toLocaleString(lang === 'es' ? 'es-ES' : 'en-US', { timeZone: 'UTC' })} UTC {warp > 1 && <span className="text-tertiary">· ×{warp}</span>}
             </div>
           </div>
+          <div className="flex sm:hidden font-label text-[11px] flex-wrap gap-3">{legend}</div>
           <div className="flex flex-wrap gap-2">
             <SourceBadge>NASA GIBS · Earthdata (EOSDIS)</SourceBadge>
             <SourceBadge>CelesTrak GP · SGP4 (satellite.js)</SourceBadge>

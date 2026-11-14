@@ -232,7 +232,7 @@ export default function Candidates() {
               </span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-headline font-bold text-on-surface tracking-tight flex flex-wrap items-center gap-3">
-              {L('Candidatos de Movimiento & Cola de Validación', 'Motion Candidates & Validation Queue')}
+              {store.simple ? L('Asteroides cercanos', 'Nearby asteroids') : L('Candidatos de Movimiento & Cola de Validación', 'Motion Candidates & Validation Queue')}
               <span className="text-xs px-2.5 py-0.5 rounded-full font-label font-medium bg-secondary-container/80 text-secondary">
                 {today.toISOString().slice(0, 10)} → +7 {L('días', 'days')}
               </span>

@@ -132,7 +132,7 @@ export default function Account() {
                 )}
                 <label className="block space-y-1">
                   <span className="text-sm font-label text-on-surface">{L('Correo electrónico', 'Email')}</span>
-                  <input type="email" value={form.email} onChange={set('email')} required className={input} placeholder="nombre@correo.com" autoComplete="email" />
+                  <input type="email" value={form.email} onChange={set('email')} required className={input} placeholder={L('nombre@correo.com', 'name@example.com')} autoComplete="email" />
                 </label>
                 {tab !== 'reset' && (
                   <label className="block space-y-1">

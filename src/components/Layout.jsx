@@ -55,7 +55,7 @@ function Sidebar({ open, onClose }) {
               <span className="font-headline font-bold text-xs tracking-wider uppercase text-on-surface">SPHEREx · Open Data</span>
               <span className="font-label text-[10px] text-secondary tracking-widest">OBSERVATORY SYS</span>
             </div>
-            <button type="button" className="ml-auto lg:hidden text-on-surface-variant" onClick={onClose} aria-label="Close menu">
+            <button type="button" className="ml-auto lg:hidden text-on-surface-variant" onClick={onClose} aria-label={L('Cerrar menú', 'Close menu')}>
               <Icon name="close" />
             </button>
           </div>
@@ -125,7 +125,7 @@ function Sidebar({ open, onClose }) {
               <span>{L('Ventana de época activa', 'Active epoch window')}</span>
             </div>
             <div className="font-label text-xs text-on-surface font-semibold pl-6">
-              {L('Survey', 'Survey')} {survey.k} // {fmtMonth(survey.start, lang)} – {fmtMonth(survey.end, lang)}
+              {L('Survey', 'Survey')} {survey.k} {'//'} {fmtMonth(survey.start, lang)} – {fmtMonth(survey.end, lang)}
             </div>
             <div className="pl-6 pt-1">
               <div className="w-full h-1 bg-surface-container rounded-full overflow-hidden">
@@ -388,7 +388,7 @@ function Header({ onMenu }) {
     <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-surface/90 backdrop-blur-xl z-30 shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
       <div className="h-16 w-full px-3 sm:px-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          <button type="button" onClick={onMenu} className="lg:hidden text-on-surface-variant p-1" aria-label="Menu">
+          <button type="button" onClick={onMenu} className="lg:hidden text-on-surface-variant p-1" aria-label={L('Menú', 'Menu')}>
             <Icon name="menu" />
           </button>
           <span className="font-headline font-bold text-sm tracking-tight text-on-surface hidden sm:flex items-center gap-2 truncate">

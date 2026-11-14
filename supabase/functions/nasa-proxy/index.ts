@@ -14,13 +14,27 @@ const ALLOWED = [
   /^DONKI\/notifications$/,
 ];
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-};
+// Only these sites may use the proxy (and the project's NASA quota) from a browser.
+// Override with the ALLOWED_ORIGINS secret (comma-separated) if the app is hosted elsewhere.
+const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ?? 'https://lilitbeth.github.io')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+const isAllowedOrigin = (origin: string) =>
+  ALLOWED_ORIGINS.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get('Origin') ?? '';
+  if (!isAllowedOrigin(origin)) {
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', Vary: 'Origin' } });
+  }
+  const CORS = {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    Vary: 'Origin',
+  };
+
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (req.method !== 'GET') return new Response('Method not allowed', { status: 405, headers: CORS });
 

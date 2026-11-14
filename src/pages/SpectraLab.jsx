@@ -102,7 +102,6 @@ export default function SpectraLab() {
 
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => vmin + f * (vmax - vmin));
   const xticks = [0.75, 1.2, 1.8, 2.5, 3.4, 4.3, 5.0];
-  const unit = quantity === 'surface' ? 'MJy/sr' : 'MJy/sr (net)';
 
   const exportCsv = () => {
     if (!spec) return;
@@ -158,7 +157,7 @@ export default function SpectraLab() {
               <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-label font-semibold bg-secondary-container text-on-secondary-container">SPHEREx DR1 · IRSA</span>
             </div>
             <h1 className="text-xl font-headline font-bold text-on-surface tracking-tight flex flex-wrap items-center gap-3">
-              {L('Laboratorio de Espectros & SED', 'Spectra & SED Lab')}
+              {store.simple ? L('Colores invisibles', 'Invisible colours') : L('Laboratorio de Espectros & SED', 'Spectra & SED Lab')}
               <span className="text-xs font-label text-tertiary font-normal px-2 py-0.5 rounded bg-surface-container-high">
                 {spec ? L(`${nValid} de 102 bandas con datos`, `${nValid} of 102 bands with data`) : L('Cargando bandas…', 'Loading bands…')}
               </span>

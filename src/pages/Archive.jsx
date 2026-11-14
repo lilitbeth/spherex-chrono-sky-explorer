@@ -192,7 +192,7 @@ export default function Archive() {
             SPHEREx All-Sky Spectral Archive // 2025–2027 Survey
           </div>
           <h1 className="font-headline font-bold text-2xl lg:text-3xl tracking-tight text-on-surface flex flex-wrap items-baseline gap-3">
-            {L('Archivo de Épocas & Cobertura Global', 'Epoch Archive & Global Coverage')}
+            {store.simple ? L('Mapa de todo el cielo', 'Whole-sky map') : L('Archivo de Épocas & Cobertura Global', 'Epoch Archive & Global Coverage')}
             <span className="font-label text-xs font-normal text-on-surface-variant px-2.5 py-0.5 rounded bg-surface-container-high">
               {L('4 SURVEYS SEMESTRALES • 102 BANDAS', '4 SEMI-ANNUAL SURVEYS • 102 BANDS')}
             </span>
