@@ -6,6 +6,19 @@ data into a multi-epoch "blink comparator", a motion-candidate validation queue,
 
 > Community project. Not an official NASA website.
 
+## Team — Binary orbit
+
+Challenge **Planet X and SPHEREx** · Local Event **San Salvador, El Salvador**
+
+- Esmeralda Elizabeth Guevara Ponce — [@lilitbeth](https://github.com/lilitbeth)
+- Adrián Josué Martínez López — [@coopersv](https://github.com/coopersv)
+
+Both members built the project together; most commits were made from a single shared computer, so joint work is
+credited with `Co-authored-by` lines.
+
+Demo: [7-slide deck](https://lilitbeth.github.io/spherex-chrono-sky-explorer/demo/) ·
+Live app: [lilitbeth.github.io/spherex-chrono-sky-explorer](https://lilitbeth.github.io/spherex-chrono-sky-explorer/)
+
 ## High-level summary
 
 SPHEREx (launched March 2025) maps the entire sky every six months in 102 infrared colours (0.75–5.0 µm).
