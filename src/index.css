@@ -59,6 +59,26 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Mobile browsers with the address bar at the TOP (Chrome/Samsung on Android) make 100vh taller than the
+   visible area, so bottoms got cut off. dvh follows the real visible height whether the bar is at the top
+   or the bottom (Safari iOS); vh stays as a fallback for older browsers. */
+.h-viewport {
+  height: 100vh;
+  height: 100dvh;
+}
+.min-h-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.max-h-modal {
+  max-height: 90vh;
+  max-height: 90dvh;
+}
+.max-h-modal-img {
+  max-height: 60vh;
+  max-height: 60dvh;
+}
+
 .pixelated {
   image-rendering: pixelated;
 }

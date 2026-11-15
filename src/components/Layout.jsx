@@ -44,11 +44,11 @@ function Sidebar({ open, onClose }) {
     <>
       {open && <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={onClose} />}
       <aside
-        className={`fixed left-0 top-0 h-full w-64 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.4)] transition-transform lg:translate-x-0 ${
+        className={`fixed left-0 top-0 h-viewport w-64 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.4)] transition-transform lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex flex-col overflow-y-auto">
+        <div className="flex flex-col overflow-y-auto min-h-0">
           <div className="h-16 shrink-0 flex items-center px-5 gap-3 bg-surface-container-lowest">
             <Icon name="satellite_alt" className="text-secondary text-2xl" />
             <div className="flex flex-col">
@@ -338,8 +338,8 @@ function Welcome() {
   if (welcomed) return null;
   const choice = (s) => `flex-1 p-4 rounded-xl text-left border-2 ${s ? 'border-secondary bg-secondary/10' : 'border-transparent bg-surface-container-high'}`;
   return (
-    <div className="fixed inset-0 z-[90] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-surface-container rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-5" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[90] bg-black/75 backdrop-blur-sm flex p-4 overflow-y-auto">
+      <div className="m-auto bg-surface-container rounded-2xl shadow-2xl w-full max-w-lg p-5 sm:p-6 space-y-4 sm:space-y-5" role="dialog" aria-modal="true">
         <div className="text-center space-y-1">
           <Icon name="rocket_launch" className="text-5xl text-primary" />
           <h2 className="font-headline font-bold text-2xl">{L('¡Bienvenido/a a bordo!', 'Welcome aboard!')}</h2>
@@ -438,11 +438,11 @@ export default function Layout({ children }) {
     document.documentElement.style.fontSize = simple ? '17.5px' : '16px';
   }, [simple]);
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-viewport bg-background">
       <Sidebar open={menu} onClose={() => setMenu(false)} />
       <div className="lg:pl-64">
         <Header onMenu={() => setMenu(true)} />
-        <main className="w-full pt-16 bg-background relative min-h-screen">
+        <main className="w-full pt-16 bg-background relative min-h-viewport">
           <div className="md:hidden px-4 pt-3">
             <SearchBox />
           </div>

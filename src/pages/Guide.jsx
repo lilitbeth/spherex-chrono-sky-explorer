@@ -317,7 +317,7 @@ export default function Guide() {
       <Modal open={!!zoom} onClose={() => setZoom(null)} title={zoom?.title || ''} wide>
         {zoom && (
           <div className="space-y-3">
-            <img src={zoom.thumb} alt={zoom.title} className="w-full max-h-[60vh] object-contain rounded-lg bg-surface-container-lowest" />
+            <img src={zoom.thumb} alt={zoom.title} className="w-full max-h-modal-img object-contain rounded-lg bg-surface-container-lowest" />
             <div className="text-[11px] font-label text-tertiary">{zoom.center} · {zoom.date?.slice(0, 10)} · NASA ID {zoom.id}</div>
             <p className="text-xs text-on-surface-variant whitespace-pre-line">{zoom.description}</p>
             <a href={`https://images.nasa.gov/details/${encodeURIComponent(zoom.id)}`} target="_blank" rel="noreferrer" className="text-xs font-label text-secondary hover:underline inline-flex items-center gap-1">images.nasa.gov <Icon name="open_in_new" className="text-xs" /></a>

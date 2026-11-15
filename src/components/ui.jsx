@@ -46,7 +46,7 @@ export function Modal({ open, onClose, title, children, wide = false }) {
       <div
         role="dialog"
         aria-modal="true"
-        className={`bg-surface-container rounded-xl shadow-2xl w-full ${wide ? 'max-w-5xl' : 'max-w-xl'} max-h-[90vh] flex flex-col`}
+        className={`bg-surface-container rounded-xl shadow-2xl w-full ${wide ? 'max-w-5xl' : 'max-w-xl'} max-h-modal flex flex-col`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-3 bg-surface-container-low rounded-t-xl">
