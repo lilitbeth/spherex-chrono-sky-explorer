@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPHEREx Chrono-Sky Explorer — Demo</title>
+  <meta name="description" content="7-slide project demo · Team Binary orbit · NASA Space Apps Challenge 2026 · Planet X and SPHEREx" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a12; --panel: #15131f; --panel2: #1d1a2b; --text: #e8e0f0; --muted: #a59fb4;
+      --pink: #ff2d78; --cyan: #00ffcc; --sky: #38bdf8; --yellow: #ffe04a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #05050a; color: var(--text); font-family: Inter, sans-serif; }
+    body { padding: 24px 16px 64px; }
+    .deck { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    .hint { max-width: 1280px; margin: 0 auto 16px; font: 500 13px 'Space Grotesk', sans-serif; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .hint a { color: var(--cyan); }
+
+    /* Every slide is a 16:9 container; sizes use container units so it scales to any width. */
+    .slide { position: relative; aspect-ratio: 16 / 9; width: 100%; container-type: inline-size; overflow: hidden;
+      background: radial-gradient(120% 90% at 85% 0%, rgba(255,45,120,.16), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(0,255,204,.10), transparent 60%), var(--bg);
+      border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .in { position: absolute; inset: 0; padding: 4.2cqw 5cqw 4.6cqw; display: flex; flex-direction: column; }
+    .num { position: absolute; right: 2.4cqw; bottom: 1.8cqw; font: 600 1.05cqw 'Space Grotesk'; color: var(--muted); letter-spacing: .1em; }
+    .foot { position: absolute; left: 5cqw; bottom: 1.8cqw; font: 600 1.05cqw 'Space Grotesk'; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+    .kicker { font: 700 1.25cqw 'Space Grotesk'; letter-spacing: .18em; text-transform: uppercase; color: var(--cyan); margin-bottom: 1cqw; }
+    h1 { font: 800 5.6cqw/1.02 Sora, sans-serif; letter-spacing: -.02em; }
+    h2 { font: 700 3.3cqw/1.1 Sora, sans-serif; letter-spacing: -.015em; margin-bottom: 1.6cqw; }
+    p, li { font-size: 1.65cqw; line-height: 1.45; color: var(--text); }
+    .muted { color: var(--muted); }
+    .pink { color: var(--pink); } .cyan { color: var(--cyan); } .sky { color: var(--sky); } .yellow { color: var(--yellow); }
+    .row { display: flex; gap: 3cqw; flex: 1; min-height: 0; }
+    .col { display: flex; flex-direction: column; gap: 1.4cqw; min-width: 0; }
+    .shot { border-radius: 1cqw; overflow: hidden; border: .12cqw solid rgba(255,255,255,.08); box-shadow: 0 1.4cqw 3cqw rgba(0,0,0,.55); background: var(--panel); }
+    .shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+    .pill { display: inline-flex; align-items: center; gap: .6cqw; padding: .55cqw 1.2cqw; border-radius: 99px; background: var(--panel2); font: 600 1.25cqw 'Space Grotesk'; }
+    .dot { width: .8cqw; height: .8cqw; border-radius: 50%; background: var(--cyan); display: inline-block; }
+    ul.clean { list-style: none; display: flex; flex-direction: column; gap: 1.1cqw; }
+    ul.clean li { display: flex; gap: 1cqw; align-items: flex-start; }
+    ul.clean li b { font-family: 'Space Grotesk'; }
+    .tick { flex: none; width: 2.2cqw; height: 2.2cqw; border-radius: .6cqw; display: grid; place-items: center; font: 700 1.2cqw 'Space Grotesk'; color: #0a0a12; background: var(--cyan); margin-top: .15cqw; }
+    .card { background: var(--panel); border-radius: 1.2cqw; padding: 1.6cqw 1.8cqw; border: .1cqw solid rgba(255,255,255,.06); }
+    .card h3 { font: 700 1.7cqw Sora; margin-bottom: .5cqw; }
+    .card p { font-size: 1.35cqw; color: var(--muted); }
+    .big { font: 800 4.2cqw Sora; line-height: 1; }
+    .timeline { display: flex; align-items: center; gap: 1.2cqw; font: 700 1.6cqw 'Space Grotesk'; }
+    .timeline .arrow { color: var(--muted); }
+    a.link { color: var(--cyan); text-decoration: none; font: 600 1.5cqw 'Space Grotesk'; }
+
+    @media print {
+      @page { size: 1600px 900px; margin: 0; }
+      html, body { background: var(--bg); padding: 0; }
+      .hint { display: none; }
+      .deck { max-width: none; gap: 0; }
+      .slide { width: 1600px; height: 900px; aspect-ratio: auto; border-radius: 0; box-shadow: none; break-after: page; page-break-after: always; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hint">
+    <span>Team Binary orbit · NASA Space Apps Challenge 2026 · 7-slide demo</span>
+    <span>Live app: <a href="https://lilitbeth.github.io/spherex-chrono-sky-explorer/">lilitbeth.github.io/spherex-chrono-sky-explorer</a></span>
+  </div>
+  <main class="deck">
+
+    <!-- 1 · Title -->
+    <section class="slide"><div class="in" style="justify-content:center">
+      <div class="row" style="align-items:center">
+        <div class="col" style="flex:1.15">
+          <div class="kicker">NASA Space Apps Challenge 2026 · Planet X and SPHEREx</div>
+          <h1>SPHEREx<br><span class="pink">Chrono-Sky</span><br>Explorer</h1>
+          <p style="font-size:2.1cqw;margin-top:1.2cqw">See the sky <b class="cyan">move</b> — with real NASA infrared data, for anyone of any age.</p>
+          <div style="display:flex;gap:1cqw;flex-wrap:wrap;margin-top:1.6cqw">
+            <span class="pill"><span class="dot"></span>Team: Binary orbit</span>
+            <span class="pill"><span class="dot" style="background:var(--pink)"></span>San Salvador, El Salvador</span>
+          </div>
+          <p class="muted" style="margin-top:1.6cqw;font-size:1.45cqw">Esmeralda Elizabeth Guevara Ponce · Adrián Josué Martínez López</p>
+        </div>
+        <div class="col" style="flex:1">
+          <div class="shot" style="aspect-ratio:16/10"><img src="img/explorer.png" alt="Sky Explorer blinking 2MASS, AllWISE and SPHEREx images of Proxima Centauri" /></div>
+        </div>
+      </div>
+      <div class="foot">Community project · not an official NASA website</div><div class="num">01 / 07</div>
+    </div></section>
+
+    <!-- 2 · Challenge -->
+    <section class="slide"><div class="in">
+      <div class="kicker">The challenge</div>
+      <h2>A billion objects, a new sky map every six months —<br><span class="pink">too much for any one person to check.</span></h2>
+      <div class="row" style="margin-top:1cqw">
+        <div class="col" style="flex:1">
+          <div class="card"><div class="big cyan">102</div><h3>infrared colours</h3><p>SPHEREx (launched March 2025) maps the whole sky in 0.75–5 µm light.</p></div>
+          <div class="card"><div class="big yellow">6 mo</div><h3>between full-sky maps</h3><p>Stars, brown dwarfs and asteroids reveal themselves by shifting position between images.</p></div>
+        </div>
+        <div class="col" style="flex:1.35">
+          <div class="card" style="flex:1">
+            <h3 class="pink" style="font-size:2cqw">Our answer</h3>
+            <ul class="clean" style="margin-top:1cqw">
+              <li><span class="tick">1</span><p>A <b>free public web tool</b> that shows SPHEREx images next to older surveys so changes jump out.</p></li>
+              <li><span class="tick">2</span><p>Anyone can <b>spot, vote on and save</b> moving-object candidates.</p></li>
+              <li><span class="tick">3</span><p>A <b>Simple mode</b> for all ages and an <b>Expert mode</b> with exports for scientists — in English and Spanish.</p></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="foot">Team Binary orbit · Planet X and SPHEREx</div><div class="num">02 / 07</div>
+    </div></section>
+
+    <!-- 3 · Blink comparator -->
+    <section class="slide"><div class="in">
+      <div class="kicker">How it works · Sky Explorer</div>
+      <div class="row">
+        <div class="col" style="flex:1">
+          <h2>26 years of sky,<br>one <span class="cyan">blink</span>.</h2>
+          <div class="timeline"><span class="sky">2MASS ≈1999</span><span class="arrow">→</span><span class="yellow">AllWISE 2010</span><span class="arrow">→</span><span class="pink">SPHEREx 2025</span></div>
+          <ul class="clean" style="margin-top:1cqw">
+            <li><span class="tick">✓</span><p>Real tiles from NASA/IPAC IRSA, re-projected in the browser onto the <b>same pixel grid</b>.</p></li>
+            <li><span class="tick">✓</span><p><b>Blink, split slider, difference and mosaic</b> views make motion obvious.</p></li>
+            <li><span class="tick">✓</span><p>Pick any of the <b>102 SPHEREx channels</b>; export everything as FITS.</p></li>
+          </ul>
+        </div>
+        <div class="col" style="flex:1.45">
+          <div class="shot" style="flex:1"><img src="img/explorer.png" alt="Sky Explorer with Proxima Centauri's motion path" /></div>
+        </div>
+      </div>
+      <div class="foot">Data: SPHEREx DR1 · 2MASS · AllWISE (NASA/IPAC IRSA)</div><div class="num">03 / 07</div>
+    </div></section>
+
+    <!-- 4 · User experience -->
+    <section class="slide"><div class="in">
+      <div class="kicker">User experience</div>
+      <div class="row">
+        <div class="col" style="flex:1.5">
+          <div class="shot" style="flex:1"><img src="img/home.png" alt="Simple mode home page" /></div>
+        </div>
+        <div class="col" style="flex:.42">
+          <div class="shot" style="flex:1"><img src="img/mobile.png" alt="Sky Explorer on a phone with a plain-language help box" /></div>
+        </div>
+        <div class="col" style="flex:1">
+          <h2 style="font-size:2.8cqw">Built for <span class="pink">every age</span>.</h2>
+          <ul class="clean">
+            <li><span class="tick">☺</span><p><b>Simple mode</b>: big text, plain words, step-by-step help boxes.</p></li>
+            <li><span class="tick">⚗</span><p><b>Expert mode</b>: coordinates, photometry, FITS/CSV, keyboard shortcuts.</p></li>
+            <li><span class="tick">▤</span><p>Works on <b>phones</b> (pinch to zoom) and desktops.</p></li>
+            <li><span class="tick">⇄</span><p><b>English / Español</b> with one tap.</p></li>
+            <li><span class="tick">★</span><p>Free <b>accounts</b> save points, votes and quiz progress.</p></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot">Simple mode shown · switch any time</div><div class="num">04 / 07</div>
+    </div></section>
+
+    <!-- 5 · Candidates + archive -->
+    <section class="slide"><div class="in">
+      <div class="kicker">Find &amp; validate</div>
+      <h2>From this week's asteroids to the <span class="cyan">whole sky</span>.</h2>
+      <div class="row">
+        <div class="col" style="flex:1">
+          <div class="shot" style="aspect-ratio:16/10"><img src="img/candidates.png" alt="Motion candidates queue with NASA NeoWs asteroids and high proper-motion stars" /></div>
+          <p><b class="pink">Motion Candidates</b> — near-Earth asteroids from NASA NeoWs plus the fastest-moving stars and brown dwarfs. Vote <i>real</i> or <i>artefact</i>; orbits computed live.</p>
+        </div>
+        <div class="col" style="flex:1">
+          <div class="shot" style="aspect-ratio:16/10"><img src="img/archive.png" alt="SPHEREx all-sky Mollweide map" /></div>
+          <p><b class="cyan">Epoch Archive</b> — the real SPHEREx all-sky map at any of 102 wavelengths, with the Milky Way, ecliptic and today's scan path.</p>
+        </div>
+      </div>
+      <div class="foot">Data: NASA NeoWs (api.nasa.gov) · SPHEREx DR1 all-sky HiPS</div><div class="num">05 / 07</div>
+    </div></section>
+
+    <!-- 6 · Spectra -->
+    <section class="slide"><div class="in">
+      <div class="kicker">Science · Spectra Lab</div>
+      <div class="row">
+        <div class="col" style="flex:1.5">
+          <div class="shot" style="flex:1"><img src="img/spectra.png" alt="102-channel SPHEREx spectrum of the Rho Ophiuchi cloud with fitted model" /></div>
+        </div>
+        <div class="col" style="flex:1">
+          <h2 style="font-size:2.8cqw">What is it <span class="yellow">made of</span>?</h2>
+          <p>Click any point of the sky and get its <b>102-channel SPHEREx spectrum</b> (0.75–5 µm).</p>
+          <ul class="clean">
+            <li><span class="tick">✓</span><p>Fit a temperature curve plus <b>water ice, CO₂ ice, CO and PAH</b> features.</p></li>
+            <li><span class="tick">✓</span><p>Kids see “invisible colours”; scientists download <b>CSV and FITS</b>.</p></li>
+            <li><span class="tick">✓</span><p>Diagnostics flag saturated or empty channels so results stay honest.</p></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot">Example: Rho Ophiuchi cloud · SPHEREx DR1 spectral cube</div><div class="num">06 / 07</div>
+    </div></section>
+
+    <!-- 7 · Data + future -->
+    <section class="slide"><div class="in">
+      <div class="kicker">Open data &amp; what's next</div>
+      <div class="row">
+        <div class="col" style="flex:1">
+          <h2 style="font-size:2.8cqw">100% <span class="cyan">open data</span>.</h2>
+          <div class="card"><h3 class="sky">NASA / IPAC IRSA</h3><p>SPHEREx DR1 spectral cube &amp; all-sky map · 2MASS · AllWISE</p></div>
+          <div class="card"><h3 class="pink">api.nasa.gov</h3><p>NeoWs near-Earth objects · DONKI space weather · Image &amp; Video Library</p></div>
+          <div class="card"><h3 class="yellow">NASA Earthdata &amp; CelesTrak</h3><p>GIBS Earth maps · live SPHEREx orbit (NORAD 63182)</p></div>
+        </div>
+        <div class="col" style="flex:1">
+          <h2 style="font-size:2.8cqw">Looking <span class="pink">ahead</span>.</h2>
+          <ul class="clean">
+            <li><span class="tick">→</span><p>Add every new SPHEREx survey as it is released: more epochs, sharper motion.</p></li>
+            <li><span class="tick">→</span><p>Turn community votes into a <b>ranked list</b> of new brown-dwarf and asteroid candidates for follow-up.</p></li>
+            <li><span class="tick">→</span><p>Classroom missions so students in El Salvador and worldwide join real discovery.</p></li>
+          </ul>
+          <div class="card" style="margin-top:auto">
+            <a class="link" href="https://lilitbeth.github.io/spherex-chrono-sky-explorer/">▶ lilitbeth.github.io/spherex-chrono-sky-explorer</a><br>
+            <a class="link" href="https://github.com/lilitbeth/spherex-chrono-sky-explorer" style="color:var(--text)">⌥ github.com/lilitbeth/spherex-chrono-sky-explorer</a>
+          </div>
+        </div>
+      </div>
+      <div class="foot">Code written with help from an AI coding assistant (Claude) · all data and screenshots are real</div><div class="num">07 / 07</div>
+    </div></section>
+
+  </main>
+</body>
+</html>
