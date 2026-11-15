@@ -331,11 +331,34 @@ function ModeToggle() {
   );
 }
 
+// Guests (not signed in) see the welcome on every new visit; sessionStorage keeps it closed
+// while they stay in the same tab. Signed-in users see it only once (persisted `welcomed`).
+const WELCOME_SEEN_KEY = 'spx.welcomeSeen';
+
 function Welcome() {
   const { welcomed, setWelcomed, setSimple, simple, profile, setProfile } = useStore();
+  const { ready, user } = useAuth();
   const { L, lang, setLang } = useI18n();
   const navigate = useNavigate();
-  if (welcomed) return null;
+  const [seenThisVisit, setSeenThisVisit] = useState(() => {
+    try {
+      return sessionStorage.getItem(WELCOME_SEEN_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const finish = (to) => {
+    try {
+      sessionStorage.setItem(WELCOME_SEEN_KEY, '1');
+    } catch {
+      /* private mode: it just shows again next load */
+    }
+    setSeenThisVisit(true);
+    setWelcomed();
+    navigate(to);
+  };
+  if (!ready) return null; // wait until we know whether there is a session
+  if (user ? welcomed : seenThisVisit) return null;
   const choice = (s) => `flex-1 p-4 rounded-xl text-left border-2 ${s ? 'border-secondary bg-secondary/10' : 'border-transparent bg-surface-container-high'}`;
   return (
     <div className="fixed inset-0 z-[90] bg-black/75 backdrop-blur-sm flex p-4 overflow-y-auto">
@@ -372,8 +395,8 @@ function Welcome() {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <button type="button" onClick={() => { setWelcomed(); navigate(simple ? '/home' : '/explorer'); }} className="flex-1 py-3 rounded-lg bg-primary text-on-primary font-headline font-bold">{L('¡Empezar!', 'Let’s go!')}</button>
-          <button type="button" onClick={() => { setWelcomed(); navigate('/account'); }} className="flex-1 py-3 rounded-lg bg-surface-container-high text-on-surface font-label">{L('Crear cuenta para guardar', 'Create an account to save')}</button>
+          <button type="button" onClick={() => finish(simple ? '/home' : '/explorer')} className="flex-1 py-3 rounded-lg bg-primary text-on-primary font-headline font-bold">{L('¡Empezar!', 'Let’s go!')}</button>
+          <button type="button" onClick={() => finish('/account')} className="flex-1 py-3 rounded-lg bg-surface-container-high text-on-surface font-label">{L('Crear cuenta para guardar', 'Create an account to save')}</button>
         </div>
         <p className="text-[11px] text-center text-on-surface-variant">{L('Puedes cambiar el modo en cualquier momento con el botón de la parte superior.', 'You can change the mode anytime with the button at the top.')}</p>
       </div>
